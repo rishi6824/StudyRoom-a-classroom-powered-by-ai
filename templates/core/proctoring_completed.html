@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Completed{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header {% if session.score >= 7 %}bg-success{% elif session.score >= 5 %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                    <h3>Interview Completed</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Session Details</h5>
+                    <table class="table">
+                        <tr>
+                            <td><strong>Role Interviewed For:</strong></td>
+                            <td>{{ session.role_type }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Overall Score:</strong></td>
+                            <td>
+                                <strong>{{ session.score }}/10</strong>
+                                {% if session.score >= 7 %}
+                                <span class="badge bg-success">Excellent</span>
+                                {% elif session.score >= 5 %}
+                                <span class="badge bg-warning">Good</span>
+                                {% else %}
+                                <span class="badge bg-danger">Needs Improvement</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Integrity Score:</strong></td>
+                            <td>{{ session.integrity_score }}/10</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Session Duration:</strong></td>
+                            <td>{{ session.started_at|timesince:session.ended_at }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                {% if session.status == 'FLAGGED' %}
+                                <span class="badge bg-danger">Flagged for Review</span>
+                                {% else %}
+                                <span class="badge bg-success">{{ session.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    {% if session.flagged_issues %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>Flagged Issues:</strong>
+                        <ul>
+                            {% for issue in session.flagged_issues %}
+                            <li>{{ issue }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if session.ai_analysis %}
+                    <div class="mt-4">
+                        <h5>AI Analysis & Recommendations:</h5>
+                        <p>{{ session.ai_analysis }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <h5>Response Details:</h5>
+                        {% for question in session.questions.all %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <strong>Q{{ question.order }}: {{ question.question_text }}</strong>
+                            </div>
+                            <div class="card-body">
+                                {% with response=question.responses.first %}
+                                    {% if response %}
+                                    <p><strong>Your Answer:</strong></p>
+                                    <p>{{ response.response_text }}</p>
+                                    
+                                    <p class="mt-2"><strong>Score: {{ response.score }}/10</strong></p>
+                                    <p><strong>Feedback:</strong></p>
+                                    <p>{{ response.ai_evaluation }}</p>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'proctoring_history' %}" class="btn btn-primary">View All Sessions</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

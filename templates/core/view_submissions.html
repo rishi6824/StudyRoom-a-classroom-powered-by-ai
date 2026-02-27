@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Submissions for {{ assignment.title }} - StudyRoom{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>Submissions</h2>
+            <p style="color: var(--text-muted);">Reviewing {{ assignment.title }} - {{ submissions.count }}
+                Submission(s)</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+
+    {% if submissions %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <th style="padding: 1rem;">Student</th>
+                    <th style="padding: 1rem;">Submitted At</th>
+                    <th style="padding: 1rem;">Score</th>
+                    <th style="padding: 1rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 1rem;">{{ submission.student.username }}</td>
+                    <td style="padding: 1rem;">{{ submission.submitted_at|date:"M d, Y H:i" }}</td>
+                    <td style="padding: 1rem;">
+                        <span style="font-weight: 700; color: var(--primary);">{{ submission.score }}/10</span>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ submission.file.url }}" target="_blank" class="btn btn-outline"
+                                style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                                View Document
+                            </a>
+                            <button class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;"
+                                onclick="showFeedback('{{ submission.student.username|escapejs }}', '{{ submission.ai_feedback|linebreaksbr|escapejs }}')">
+                                View AI Feedback
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.05); border-radius: 1rem;">
+        <p style="color: var(--text-muted);">No students have submitted this assignment yet.</p>
+    </div>
+    {% endif %}
+
+    {% if pending_students %}
+    <div style="margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Pending Submissions</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">The following students haven't submitted their work
+            yet:</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+            {% for student in pending_students %}
+            <div
+                style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
+                <span style="color: #f59e0b; font-weight: 500;">{{ student.username }}</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Not Submitted</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Simple Modal for Feedback -->
+<div id="feedbackModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div class="card" style="max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 id="modalTitle" style="margin-bottom: 1.5rem;">Feedback</h3>
+        <div id="modalContent" style="line-height: 1.6; color: var(--text-muted); margin-bottom: 2rem;"></div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="hideFeedback()">Close</button>
+    </div>
+</div>
+
+<script>
+    function showFeedback(student, feedback) {
+        document.getElementById('modalTitle').innerText = 'AI Feedback for ' + student;
+        document.getElementById('modalContent').innerHTML = feedback;
+        document.getElementById('feedbackModal').style.display = 'flex';
+    }
+    function hideFeedback() {
+        document.getElementById('feedbackModal').style.display = 'none';
+    }
+    // Close modal on outside click
+    window.onclick = function (event) {
+        if (event.target == document.getElementById('feedbackModal')) {
+            hideFeedback();
+        }
+    }
+</script>
+{% endblock %}

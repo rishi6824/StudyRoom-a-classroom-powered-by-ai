@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Resume{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">Upload Your Resume</h2>
+            
+            {% if resume.file %}
+            <div class="alert alert-info">
+                <strong>Current Resume:</strong> {{ resume.file.name }}
+                <br>
+                <small>Uploaded: {{ resume.uploaded_at }}</small>
+            </div>
+            {% endif %}
+            
+            <form method="POST" enctype="multipart/form-data" class="form">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="id_file">Select Resume File (PDF, DOCX, DOC, TXT)</label>
+                    {{ form.file }}
+                </div>
+                
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary">Upload & Analyze Resume</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </form>
+            
+            {% if resume.analysis_status != 'PENDING' %}
+            <div class="mt-4">
+                <h3>Analysis Status</h3>
+                <div class="alert {% if resume.analysis_status == 'COMPLETED' %}alert-success{% elif resume.analysis_status == 'PROCESSING' %}alert-info{% else %}alert-danger{% endif %}">
+                    Status: <strong>{{ resume.get_analysis_status_display }}</strong>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

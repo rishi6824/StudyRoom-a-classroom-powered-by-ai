@@ -22,7 +22,8 @@
             <h3>My Progress</h3>
             <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0 1.5rem;">Check your overall score
                 and AI-generated insights.</p>
-            <a href="#" class="btn btn-outline" style="width: 100%; text-align: center;">View Reports</a>
+            <a href="#submissions-section" class="btn btn-outline" style="width: 100%; text-align: center;">View
+                Reports</a>
         </div>
     </div>
 
@@ -48,7 +49,7 @@
         {% endif %}
     </div>
 
-    <h3 style="margin-top: 3rem;">My Submissions</h3>
+    <h3 id="submissions-section" style="margin-top: 3rem;">My Submissions</h3>
     <div style="margin-top: 1rem;">
         {% if submissions %}
         <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
@@ -65,7 +66,7 @@
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <td style="padding: 1rem;">{{ submission.assignment.title }}</td>
                     <td style="padding: 1rem;">
-                        {% if submission.score %}
+                        {% if submission.score is not None %}
                         <span style="color: var(--accent); font-weight: 600;">{{ submission.score }}/10</span>
                         {% else %}
                         <span style="color: var(--text-muted);">Pending</span>

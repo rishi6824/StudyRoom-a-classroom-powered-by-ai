@@ -31,7 +31,10 @@
                     <td style="padding: 1rem;">{{ assignment.created_at|date }}</td>
                     <td style="padding: 1rem;">{{ assignment.submissions.count }}</td>
                     <td style="padding: 1rem;">
-                        <a href="#" style="color: var(--primary);">View Details</a>
+                        <a href="{% url 'assignment_submissions' assignment.pk %}"
+                            style="color: var(--primary); font-weight: 600;">View Submissions</a>
+                        <a href="{% url 'view_assignment' assignment.pk %}"
+                            style="color: var(--text-muted); margin-left: 1rem; font-size: 0.875rem;">Details</a>
                     </td>
                 </tr>
                 {% endfor %}

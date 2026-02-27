@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}No Resume{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="card-title">No Resume Uploaded</h4>
+                    <p class="card-text">You haven't uploaded your resume yet. Start by uploading and analyzing your resume.</p>
+                    <a href="{% url 'upload_resume' %}" class="btn btn-primary btn-lg">Upload Resume</a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

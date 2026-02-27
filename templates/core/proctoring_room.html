@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Proctoring Interview{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Video/Webcam Area -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Interview Session: {{ session.role_type }}</h5>
+                    <small>Question {{ progress.current }} of {{ progress.total }}</small>
+                </div>
+                <div class="card-body bg-light" style="min-height: 400px;">
+                    <!-- Webcam would go here in production -->
+                    <div id="webcam-container" class="text-center">
+                        <p class="text-muted">Webcam stream would appear here</p>
+                        <p class="text-muted">(Requires browser permissions)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Sidebar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6>Progress</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ progress.answered|add:1 }}0%;" 
+                             aria-valuenow="{{ progress.answered|add:1 }}" 
+                             aria-valuemin="0" aria-valuemax="{{ progress.total }}">
+                            {{ progress.answered|add:1 }}/{{ progress.total }}
+                        </div>
+                    </div>
+                    
+                    <h6>Current Question:</h6>
+                    <p class="text-muted"><em>{{ question.question_text }}</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Response Form -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Your Response</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="id_response_text">Type your answer below:</label>
+                            {{ form.response_text }}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="id_response_audio">Or upload an audio response (optional):</label>
+                            {{ form.response_audio }}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="id_duration_seconds">Duration (seconds):</label>
+                            {{ form.duration_seconds }}
+                        </div>
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-primary">Submit Response</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple webcam access request (in production, use a proper library)
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+            console.log('Camera and microphone access granted');
+        })
+        .catch(err => {
+            console.log('Permission denied:', err);
+            alert('Please allow camera and microphone access for this interview.');
+        });
+</script>
+{% endblock %}

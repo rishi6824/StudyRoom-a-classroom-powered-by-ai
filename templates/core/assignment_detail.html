@@ -42,13 +42,15 @@
             <div style="display: flex; gap: 2rem; align-items: center; margin-bottom: 2rem;">
                 <div
                     style="text-align: center; background: rgba(124, 58, 237, 0.1); padding: 1.5rem; border-radius: 1rem; min-width: 120px;">
-                    <span style="display: block; font-size: 2.5rem; font-weight: 700; color: var(--primary);">{{
-                        submission.score }}</span>
+                    <span style="display: block; font-size: 2.5rem; font-weight: 700; color: var(--primary);">
+                        {% if submission.score is not None %}{{ submission.score }}{% else %}?{% endif %}
+                    </span>
                     <span style="font-size: 0.875rem; color: var(--text-muted);">Overall Score</span>
                 </div>
                 <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 1rem; flex: 1;">
-                    <h4 style="margin-bottom: 0.5rem;">AI Feedback</h4>
-                    <p style="line-height: 1.5; color: var(--text-muted);">{{ submission.ai_feedback }}</p>
+                    <h4 style="margin-bottom: 0.5rem; color: var(--accent);">Detailed Evaluation</h4>
+                    <div style="line-height: 1.6; color: var(--text-muted);">{{ submission.ai_feedback|linebreaks }}
+                    </div>
                 </div>
             </div>
             <a href="{{ submission.file.url }}" class="btn btn-outline" target="_blank">View My Submission</a>

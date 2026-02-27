@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4">Resume Analysis Results</h2>
+            
+            {% if resume.analysis_status == 'COMPLETED' %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5>Overall Score: {{ resume.score }}/10</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">Skills Identified:</h6>
+                    {% if resume.skills_extracted %}
+                    <div class="mb-3">
+                        {% for skill in resume.skills_extracted %}
+                        <span class="badge bg-primary">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>No skills extracted yet.</p>
+                    {% endif %}
+                    
+                    <h6 class="card-title mt-4">Suggestions for Improvement:</h6>
+                    <p>{{ resume.suggestions }}</p>
+                    
+                    {% if resume.ai_analysis %}
+                    <h6 class="card-title mt-4">Detailed Analysis:</h6>
+                    <p>{{ resume.ai_analysis }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% elif resume.analysis_status == 'PROCESSING' %}
+            <div class="alert alert-info">
+                <strong>Processing...</strong> Your resume is being analyzed. Please refresh the page in a moment.
+            </div>
+            
+            {% elif resume.analysis_status == 'FAILED' %}
+            <div class="alert alert-warning">
+                <strong>Analysis Failed</strong> There was an issue analyzing your resume. Please try uploading again.
+            </div>
+            {% endif %}
+            
+            <a href="{% url 'upload_resume' %}" class="btn btn-primary">Update Resume</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
