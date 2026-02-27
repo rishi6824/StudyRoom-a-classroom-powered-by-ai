@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - StudyRoom{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 4rem auto;">
+    <div class="card" style="overflow: hidden; padding: 0;">
+        <div
+            style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 4rem 2rem; text-align: center; position: relative;">
+            <div class="profile-icon"
+                style="width: 140px; height: 140px; margin: 0 auto 1.5rem; border: 4px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; position: relative; cursor: pointer;"
+                onclick="document.getElementById('id_image').click();">
+                {% if user.profile.image %}
+                <img src="{{ user.profile.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <span style="font-size: 4rem;">{{ user.username|first|upper }}</span>
+                {% endif %}
+                <div
+                    style="position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 5px; font-size: 0.7rem; color: white;">
+                    Change</div>
+            </div>
+            <h2 style="margin-bottom: 0.5rem; color: white;">{{ user.username }}</h2>
+            <span
+                style="background: rgba(255,255,255,0.2); color: white; padding: 0.25rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">
+                {{ user.profile.role }}
+            </span>
+        </div>
+
+        <div style="padding: 3rem 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Account Info -->
+                <div>
+                    <h4
+                        style="margin-bottom: 1.5rem; text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em;">
+                        Account Details</h4>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <span style="display: block; font-size: 0.875rem; color: var(--text-muted);">Email
+                                Address</span>
+                            <p style="font-weight: 500;">{{ user.email }}</p>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.875rem; color: var(--text-muted);">Member
+                                Since</span>
+                            <p style="font-weight: 500;">{{ user.date_joined|date }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats/Activity -->
+                <div>
+                    <h4
+                        style="margin-bottom: 1.5rem; text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em;">
+                        Quick Stats</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div
+                            style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); padding: 1.5rem 1rem; border-radius: 1.25rem; text-align: center;">
+                            {% if user.profile.role == 'STUDENT' %}
+                            <span
+                                style="display: block; font-size: 1.75rem; font-weight: 800; color: var(--primary);">{{
+                                user.submissions.count }}</span>
+                            <span
+                                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Submissions</span>
+                            {% else %}
+                            <span
+                                style="display: block; font-size: 1.75rem; font-weight: 800; color: var(--primary);">{{
+                                user.created_assignments.count }}</span>
+                            <span
+                                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Assignments</span>
+                            {% endif %}
+                        </div>
+                        <div
+                            style="background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.1); padding: 1.5rem 1rem; border-radius: 1.25rem; text-align: center;">
+                            <span style="display: block; font-size: 1.75rem; font-weight: 800; color: var(--accent);">
+                                {{ user.interviews.count }}
+                            </span>
+                            <span
+                                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Interviews</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: 3rem; border-top: 1px solid var(--glass-border); padding-top: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+
+                <!-- Hidden Upload Form -->
+                <form id="profile-upload-form" method="POST" enctype="multipart/form-data" style="display: none;">
+                    {% csrf_token %}
+                    {{ form.image }}
+                </form>
+
+                <script>
+                    document.getElementById('id_image').onchange = function () {
+                        document.getElementById('profile-upload-form').submit();
+                    };
+                </script>
+
+                <div>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline"
+                            style="width: 100%; text-align: center; color: #ef4444; border-color: rgba(239, 68, 68, 0.2); padding: 1rem;">Logout
+                            Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

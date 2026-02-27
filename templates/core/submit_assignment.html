@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit {{ assignment.title }} - StudyRoom{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto;">
+    <div class="card">
+        <h2 style="margin-bottom: 0.5rem; text-align: center;">Submit Assignment</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">{{ assignment.title }}</p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group"
+                style="text-align: center; padding: 3rem; border: 2px dashed rgba(255,255,255,0.1); border-radius: 1rem; margin-bottom: 2rem; cursor: pointer; transition: background 0.3s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                onmouseout="this.style.background='transparent'">
+                <label for="{{ form.file.id_for_label }}" style="cursor: pointer; display: block;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📁</div>
+                    <p style="font-weight: 500;">Click to upload or drag and drop</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">PDF, DOCX, or ZIP
+                        files supported</p>
+                    <div style="display: none;">{{ form.file }}</div>
+                </label>
+            </div>
+            {% if form.file.errors %}
+            <p style="color: #ef4444; text-align: center; margin-bottom: 1rem;">{{ form.file.errors.0 }}</p>
+            {% endif %}
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit for AI Evaluation</button>
+                <a href="{% url 'view_assignment' assignment.pk %}" class="btn btn-outline"
+                    style="flex: 1; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.querySelector('input[type="file"]').addEventListener('change', function (e) {
+        const fileName = e.target.files[0]?.name;
+        if (fileName) {
+            document.querySelector('.form-group p').innerText = 'Selected: ' + fileName;
+        }
+    });
+</script>
+{% endblock %}

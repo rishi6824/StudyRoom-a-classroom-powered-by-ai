@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Practice Interview - StudyRoom{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">AI Practice Interview</h2>
+        <div style="background: rgba(124, 58, 237, 0.1); padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;">
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem;">
+                This practice interview is **AI-proctored**. The system will monitor your responses and provide a
+                recommendation for your career path.
+            </p>
+            <ul style="text-align: left; color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">
+                <li>• Ensure your camera and microphone are ready.</li>
+                <li>• Speak clearly and concisely.</li>
+                <li>• The AI will analyze your speech and confidence levels.</li>
+            </ul>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'interview_room' %}" class="btn btn-primary" style="flex: 2;">Begin Proctored Session</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="flex: 1;">Back</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

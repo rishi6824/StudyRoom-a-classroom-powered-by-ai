@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - StudyRoom{% endblock %}
+{% block title %}Create Assignment - StudyRoom{% endblock %}
 
 {% block content %}
-<div style="max-width: 450px; margin: 4rem auto;">
+<div style="max-width: 600px; margin: 4rem auto;">
     <div class="card">
-        <h2 style="margin-bottom: 1.5rem; text-align: center;">Welcome Back</h2>
+        <h2 style="margin-bottom: 1.5rem; text-align: center;">New Assignment</h2>
         <form method="post">
             {% csrf_token %}
             {% for field in form %}
@@ -17,12 +17,11 @@
                 {% endif %}
             </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Create Assignment</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline" style="flex: 1; text-align: center;">Cancel</a>
+            </div>
         </form>
-        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
-            Don't have an account? <a href="{% url 'signup' %}"
-                style="color: var(--primary); text-decoration: none;">Sign Up</a>
-        </p>
     </div>
 </div>
 {% endblock %}

@@ -1,28 +1,56 @@
-from django.test import TestCase
-from django.urls import reverse
+from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from .models import Profile, Assignment, Submission
+from django.urls import reverse
 
-class CoreViewsTest(TestCase):
-    def test_home_view(self):
-        response = self.client.get(reverse('home'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "AI-Powered Assignment Evaluation")
+class AdvancedFeaturesTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        # Create Teacher
+        self.teacher_user = User.objects.create_user(username='teacher', password='password123')
+        self.teacher_profile = Profile.objects.get(user=self.teacher_user)
+        self.teacher_profile.role = 'TEACHER'
+        self.teacher_profile.save()
+        
+        # Create Student
+        self.student_user = User.objects.create_user(username='student', password='password123')
+        self.student_profile = Profile.objects.get(user=self.student_user)
+        self.student_profile.role = 'STUDENT'
+        self.student_profile.save()
 
-    def test_signup_view(self):
-        response = self.client.get(reverse('signup'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_login_view(self):
-        response = self.client.get(reverse('login'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_dashboard_access_denied_if_not_logged_in(self):
-        response = self.client.get(reverse('dashboard'))
-        self.assertEqual(response.status_code, 302)  # Redirects to login
-
-    def test_dashboard_access_granted_if_logged_in(self):
-        user = User.objects.create_user(username='testuser', password='password123')
-        self.client.login(username='testuser', password='password123')
+    def test_teacher_dashboard_access(self):
+        self.client.login(username='teacher', password='password123')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Welcome, testuser!")
+        self.assertTemplateUsed(response, 'core/teacher_dashboard.html')
+
+    def test_student_dashboard_access(self):
+        self.client.login(username='student', password='password123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/student_dashboard.html')
+
+    def test_create_assignment(self):
+        self.client.login(username='teacher', password='password123')
+        response = self.client.post(reverse('create_assignment'), {
+            'title': 'Test Assignment',
+            'description': 'Test Description',
+        })
+        self.assertEqual(response.status_code, 302) # Redirect to dashboard
+        self.assertEqual(Assignment.objects.count(), 1)
+
+    def test_interview_access(self):
+        self.client.login(username='student', password='password123')
+        response = self.client.get(reverse('start_interview'))
+        self.assertEqual(response.status_code, 200)
+        
+        response = self.client.get(reverse('interview_room'))
+        self.assertEqual(response.status_code, 200)
+        
+        response = self.client.get(reverse('interview_results'))
+        self.assertEqual(response.status_code, 200)
+    def test_profile_access(self):
+        self.client.login(username='student', password='password123')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/profile.html')

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Recommendation - AI Evaluation{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 4rem auto;">
+    <div class="card" style="text-align: center; overflow: hidden; padding: 0;">
+        <div style="background: var(--primary); padding: 3rem 2rem;">
+            <h2 style="margin-bottom: 1rem;">Performance Report</h2>
+            <p style="opacity: 0.8;">Practice Session for {{ interview.role_type }}</p>
+        </div>
+
+        <div style="padding: 3rem 2rem;">
+            <div style="display: flex; justify-content: center; gap: 3rem; margin-bottom: 3rem;">
+                <div style="text-align: center;">
+                    <span style="display: block; font-size: 3rem; font-weight: 800; color: var(--accent);">{{
+                        interview.score }}</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">AI Score</span>
+                </div>
+                <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
+                <div style="text-align: center;">
+                    <span style="display: block; font-size: 3rem; font-weight: 800; color: var(--primary);">92%</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">Proctoring Trust</span>
+                </div>
+            </div>
+
+            <div
+                style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); text-align: left; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1.5rem; color: var(--accent);">AI Career Recommendation</h3>
+                <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-muted);">
+                    {{ interview.ai_recommendation }}
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <a href="{% url 'start_interview' %}" class="btn btn-primary">Retake Interview</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline" style="text-align: center;">Back to
+                    Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

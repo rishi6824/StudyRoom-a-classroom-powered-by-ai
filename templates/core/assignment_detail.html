@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ assignment.title }} - StudyRoom{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 4rem auto;">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+            <div>
+                <h2 style="margin-bottom: 0.5rem;">{{ assignment.title }}</h2>
+                <p style="color: var(--text-muted);">Assigned by {{ assignment.teacher.username }} on {{
+                    assignment.created_at|date }}</p>
+            </div>
+            {% if submission %}
+            <div style="text-align: right;">
+                <span
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Status</span>
+                <span
+                    style="background: rgba(16, 185, 129, 0.1); color: var(--accent); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">Completed</span>
+            </div>
+            {% else %}
+            <div style="text-align: right;">
+                <span
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Status</span>
+                <span
+                    style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">Pending</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div
+            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem;">
+            <h4
+                style="margin-bottom: 1rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+                Description</h4>
+            <div style="line-height: 1.6;">{{ assignment.description|linebreaks }}</div>
+        </div>
+
+        {% if submission %}
+        <div style="margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+            <h3 style="margin-bottom: 1.5rem;">AI Evaluation Results</h3>
+            <div style="display: flex; gap: 2rem; align-items: center; margin-bottom: 2rem;">
+                <div
+                    style="text-align: center; background: rgba(124, 58, 237, 0.1); padding: 1.5rem; border-radius: 1rem; min-width: 120px;">
+                    <span style="display: block; font-size: 2.5rem; font-weight: 700; color: var(--primary);">{{
+                        submission.score }}</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">Overall Score</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 1rem; flex: 1;">
+                    <h4 style="margin-bottom: 0.5rem;">AI Feedback</h4>
+                    <p style="line-height: 1.5; color: var(--text-muted);">{{ submission.ai_feedback }}</p>
+                </div>
+            </div>
+            <a href="{{ submission.file.url }}" class="btn btn-outline" target="_blank">View My Submission</a>
+        </div>
+        {% else %}
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-primary"
+                style="flex: 1; text-align: center;">Upload Assignment</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="flex: 1; text-align: center;">Back to
+                Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

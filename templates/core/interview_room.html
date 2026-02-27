@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Room - AI Proctored{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 2rem auto;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Interview Space -->
+        <div>
+            <div class="card"
+                style="margin-bottom: 2rem; min-height: 200px; display: flex; flex-direction: column; justify-content: center; position: relative;">
+                <div
+                    style="position: absolute; top: 1rem; right: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span
+                        style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: #ef4444; text-transform: uppercase;">Live
+                        Proctoring</span>
+                </div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">AI Interviewer:</h4>
+                <p style="font-size: 1.25rem; line-height: 1.6;">"{{ question }}"</p>
+            </div>
+
+            <div class="card"
+                style="background: #000; height: 350px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border: 1px solid var(--primary);">
+                <div style="text-align: center;">
+                    <p style="color: var(--text-muted);">[ Camera Feed Simulation ]</p>
+                    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.25rem;">
+                        <div
+                            style="width: 4px; height: 20px; background: var(--primary); animation: wave 1s infinite 0.1s;">
+                        </div>
+                        <div
+                            style="width: 4px; height: 35px; background: var(--primary); animation: wave 1s infinite 0.2s;">
+                        </div>
+                        <div
+                            style="width: 4px; height: 25px; background: var(--primary); animation: wave 1s infinite 0.3s;">
+                        </div>
+                        <div
+                            style="width: 4px; height: 40px; background: var(--primary); animation: wave 1s infinite 0.4s;">
+                        </div>
+                        <div
+                            style="width: 4px; height: 15px; background: var(--primary); animation: wave 1s infinite 0.5s;">
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="position: absolute; bottom: 1rem; left: 1rem; background: rgba(0,0,0,0.6); padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem;">
+                    Detected: <span style="color: var(--accent);">Confidence High</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <a href="{% url 'interview_results' %}" class="btn btn-primary"
+                    style="padding: 1rem 3rem; font-size: 1.1rem;">Finish and Get Recommendation</a>
+            </div>
+        </div>
+
+        <!-- Monitoring Stats -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="card" style="padding: 1.5rem;">
+                <h4 style="margin-bottom: 1rem;">Proctoring Info</h4>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <span
+                            style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">EYE
+                            TRACKING</span>
+                        <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px;">
+                            <div style="height: 100%; width: 95%; background: var(--accent); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <span
+                            style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">SPEECH
+                            CLARITY</span>
+                        <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px;">
+                            <div style="height: 100%; width: 88%; background: var(--primary); border-radius: 3px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 1.5rem; background: rgba(124, 58, 237, 0.05);">
+                <h4 style="margin-bottom: 0.5rem;">AI Insight</h4>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">
+                    Your baseline confidence is solid. The AI is observing your body language for the final
+                    recommendation.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+    }
+
+    @keyframes wave {
+
+        0%,
+        100% {
+            height: 10px;
+        }
+
+        50% {
+            height: 40px;
+        }
+    }
+</style>
+{% endblock %}

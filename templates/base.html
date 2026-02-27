@@ -1,108 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Assignment Evaluation{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>{% block title %}StudyRoom - AI Learning Platform{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #f8fafc;
-            --accent: #10b981;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f1f5f9;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --accent: #34d399;
+            --bg-dark: #020617;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text-light: #f8fafc;
             --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-blur: blur(12px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            line-height: 1.6;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(52, 211, 153, 0.05) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
         }
 
         header {
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
+            padding: 1.25rem 0;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--glass-border);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
             font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
+            font-weight: 800;
+            color: var(--text-light);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        /* Profile/Brand Logo in CSS */
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .brand-logo::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(200%) rotate(45deg);
+            }
+        }
+
+        .brand-logo-inner {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 4px;
+            transform: rotate(45deg);
         }
 
         nav a {
-            color: var(--text-main);
+            color: var(--text-muted);
             text-decoration: none;
-            margin-left: 1.5rem;
-            font-weight: 600;
-            transition: color 0.3s;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95rem;
         }
 
         nav a:hover {
             color: var(--primary);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
         .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            display: inline-block;
+            padding: 0.75rem 1.75rem;
+            border-radius: 0.75rem;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.3s;
-            display: inline-block;
+            transition: all 0.2s;
             cursor: pointer;
             border: none;
+            font-size: 0.95rem;
         }
 
         .btn-primary {
-            background-color: var(--primary);
+            background: var(--primary);
             color: white;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: var(--primary-dark);
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4);
         }
 
         .btn-outline {
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 1rem;
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
             padding: 2.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-5px);
         }
 
         .form-group {
@@ -113,6 +182,8 @@
             display: block;
             margin-bottom: 0.5rem;
             color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .form-group input {
@@ -124,6 +195,65 @@
             color: white;
         }
 
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.75rem;
+            color: var(--text-light);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Specific for Profile Logo usage */
+        .profile-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
         .hero {
             text-align: center;
             padding: 5rem 0;
@@ -131,10 +261,12 @@
 
         .hero h1 {
             font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, var(--primary));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
         }
 
         .hero p {
@@ -145,18 +277,27 @@
         }
     </style>
 </head>
+
 <body>
     <header>
-        <a href="{% url 'home' %}" class="logo">AssignmentAI</a>
-        <nav>
-            {% if user.is_authenticated %}
+        <div class="container nav-content">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="brand-logo">
+                    <div class="brand-logo-inner"></div>
+                </div>
+                <span>StudyRoom</span>
+            </a>
+            <nav>
+                {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}">Dashboard</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
+                <a href="{% url 'profile' %}">Profile</a>
+                {% else %}
                 <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
-            {% endif %}
-        </nav>
+                <a href="{% url 'signup' %}" class="btn btn-primary" style="margin-left: 1rem; color: white;">Get
+                    Started</a>
+                {% endif %}
+            </nav>
+        </div>
     </header>
 
     <div class="container">
@@ -164,4 +305,5 @@
         {% endblock %}
     </div>
 </body>
+
 </html>

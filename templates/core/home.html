@@ -1,17 +1,80 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - AI Assignment Evaluation{% endblock %}
+{% block title %}StudyRoom - Professional AI Learning Platform{% endblock %}
 
 {% block content %}
-<div class="hero">
-    <h1>AI-Powered Assignment Evaluation</h1>
-    <p>Upload your assignments and receive instant, detailed, and actionable feedback using state-of-the-art AI
-        technology.</p>
-    <div class="actions">
-        <a href="{% url 'signup' %}" class="btn btn-primary" style="font-size: 1.25rem; padding: 1rem 2rem;">Get
-            Started</a>
-        <a href="#features" class="btn btn-outline"
-            style="font-size: 1.25rem; padding: 1rem 2rem; margin-left: 1rem;">Learn More</a>
+<div class="animate-fade" style="padding: 6rem 0; text-align: center;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <span
+            style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3em; font-size: 0.75rem; margin-bottom: 1.5rem; display: block;">Revolutionizing
+            Academic Growth</span>
+        <h1
+            style="font-size: 4.5rem; font-weight: 800; line-height: 1; margin-bottom: 2rem; background: linear-gradient(to bottom right, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em;">
+            Experience the Future <br>of <span style="color: var(--primary);">StudyRoom</span> Intelligence
+        </h1>
+        <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.6;">
+            A complete AI-driven ecosystem for teachers to manage assignments and for students to receive instant, deep
+            evaluation and proctored interview feedback.
+        </p>
+        <div style="display: flex; gap: 1.5rem; justify-content: center;">
+            <a href="{% url 'signup' %}" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Get
+                Started for Free</a>
+            <a href="#features" class="btn btn-outline" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Explore
+                Features</a>
+        </div>
+    </div>
+</div>
+
+<div id="features" style="padding: 6rem 0;">
+    <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.5rem; font-weight: 800;">Our Core Features</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+        <!-- Multi-Role Management -->
+        <div class="card" style="text-align: left;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">👥</div>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">Multi-Role Portals</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Distinct dashboards for Teachers and Students. Teachers manage tasks while students grow through
+                feedback.
+            </p>
+        </div>
+
+        <!-- AI Assignment Grading -->
+        <div class="card" style="text-align: left;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">📝</div>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">AI Grading</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Powered by Ollama & Gemini. Upload assignments and receive instant scores and structural feedback.
+            </p>
+        </div>
+
+        <!-- Proctored Interviews -->
+        <div class="card" style="text-align: left;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">🎥</div>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">AI Proctoring</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Real-time interview sessions with body language analysis and career-path recommendations.
+            </p>
+        </div>
+
+        <!-- Career Guidance -->
+        <div class="card" style="text-align: left;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">🚀</div>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">Growth Insights</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Data-driven reports showing student progress and areas for improvement in technical subjects.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div
+    style="padding: 6rem 0; margin-top: 4rem; background: linear-gradient(180deg, transparent, rgba(16, 185, 129, 0.05), transparent); border-radius: 3rem;">
+    <div class="card"
+        style="text-align: center; max-width: 900px; margin: 0 auto; border: 1px solid rgba(16, 185, 129, 0.2);">
+        <h2 style="margin-bottom: 1.5rem;">Ready to Empower Your Education?</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem;">Join thousands of students and
+            teachers already using AI to bridge the gap between learning and evaluation.</p>
+        <a href="{% url 'signup' %}" class="btn btn-primary" style="padding: 1rem 3rem;">Sign Up Now</a>
     </div>
 </div>
 {% endblock %}

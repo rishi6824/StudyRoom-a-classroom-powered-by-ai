@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - StudyRoom{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>Teacher Dashboard</h2>
+            <p style="color: var(--text-muted);">Manage your assignments and view student submissions.</p>
+        </div>
+        <a href="{% url 'create_assignment' %}" class="btn btn-primary">Create New Assignment</a>
+    </div>
+
+    <h3>Active Assignments</h3>
+    <div style="margin-top: 1rem;">
+        {% if assignments %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <th style="padding: 1rem;">Title</th>
+                    <th style="padding: 1rem;">Created</th>
+                    <th style="padding: 1rem;">Submissions</th>
+                    <th style="padding: 1rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 1rem;">{{ assignment.title }}</td>
+                    <td style="padding: 1rem;">{{ assignment.created_at|date }}</td>
+                    <td style="padding: 1rem;">{{ assignment.submissions.count }}</td>
+                    <td style="padding: 1rem;">
+                        <a href="#" style="color: var(--primary);">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+            <p style="color: var(--text-muted);">You haven't created any assignments yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

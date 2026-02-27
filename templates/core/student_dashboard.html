@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - StudyRoom{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 2rem;">
+    <h2>Student Dashboard</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">View your assignments, take AI interviews, and check your
+        progress.</p>
+
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div class="card" style="background: rgba(255,255,255,0.05); padding: 1.5rem;">
+            <h3>Practice Interview</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0 1.5rem;">Take an AI-proctored
+                interview to get career recommendations.</p>
+            <a href="{% url 'start_interview' %}" class="btn btn-primary" style="width: 100%; text-align: center;">Start
+                Interview</a>
+        </div>
+
+        <div class="card" style="background: rgba(255,255,255,0.05); padding: 1.5rem;">
+            <h3>My Progress</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0 1.5rem;">Check your overall score
+                and AI-generated insights.</p>
+            <a href="#" class="btn btn-outline" style="width: 100%; text-align: center;">View Reports</a>
+        </div>
+    </div>
+
+    <h3>Available Assignments</h3>
+    <div style="margin-top: 1rem;">
+        {% if available_assignments %}
+        <div style="display: grid; gap: 1rem;">
+            {% for assignment in available_assignments %}
+            <div class="card"
+                style="background: rgba(255,255,255,0.05); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4>{{ assignment.title }}</h4>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">By {{ assignment.teacher.username }}</p>
+                </div>
+                <a href="{% url 'view_assignment' assignment.pk %}" class="btn btn-primary">Start Task</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+            <p style="color: var(--text-muted);">No new assignments available.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <h3 style="margin-top: 3rem;">My Submissions</h3>
+    <div style="margin-top: 1rem;">
+        {% if submissions %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <th style="padding: 1rem;">Assignment</th>
+                    <th style="padding: 1rem;">Score</th>
+                    <th style="padding: 1rem;">AI Feedback</th>
+                    <th style="padding: 1rem;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 1rem;">{{ submission.assignment.title }}</td>
+                    <td style="padding: 1rem;">
+                        {% if submission.score %}
+                        <span style="color: var(--accent); font-weight: 600;">{{ submission.score }}/10</span>
+                        {% else %}
+                        <span style="color: var(--text-muted);">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td
+                        style="padding: 1rem; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ submission.ai_feedback|default:"Processing..." }}
+                    </td>
+                    <td style="padding: 1rem;">{{ submission.submitted_at|date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+            <p style="color: var(--text-muted);">You haven't submitted anything yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
