@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - AI Assignment Evaluation{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>AI-Powered Assignment Evaluation</h1>
+    <p>Upload your assignments and receive instant, detailed, and actionable feedback using state-of-the-art AI
+        technology.</p>
+    <div class="actions">
+        <a href="{% url 'signup' %}" class="btn btn-primary" style="font-size: 1.25rem; padding: 1rem 2rem;">Get
+            Started</a>
+        <a href="#features" class="btn btn-outline"
+            style="font-size: 1.25rem; padding: 1rem 2rem; margin-left: 1rem;">Learn More</a>
+    </div>
+</div>
+{% endblock %}

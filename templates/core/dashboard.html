@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AI Assignment Evaluation{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 2rem;">
+    <h2>Welcome, {{ user.username }}!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">This is your assignment evaluation dashboard.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div class="card" style="background: rgba(255,255,255,0.05); padding: 1.5rem;">
+            <h3>New Assignment</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0 1.5rem;">Upload a new document for
+                evaluation.</p>
+            <a href="#" class="btn btn-primary" style="width: 100%; text-align: center;">Upload Now</a>
+        </div>
+
+        <div class="card" style="background: rgba(255,255,255,0.05); padding: 1.5rem;">
+            <h3>Recent Evaluations</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0.5rem 0 1.5rem;">View your past assignment
+                feedback.</p>
+            <a href="#" class="btn btn-outline" style="width: 100%; text-align: center;">View History</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
