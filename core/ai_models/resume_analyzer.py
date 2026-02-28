@@ -98,6 +98,10 @@ class ResumeAnalyzer:
         # Generate recommendations
         analysis['recommendations'] = self._generate_recommendations(analysis)
         
+        # Check for plagiarism/copying
+        plagiarism_result = self._get_plagiarism_percentage(text)
+        analysis['plagiarism'] = plagiarism_result
+        
         return analysis
     
     def _extract_skills(self, text):
@@ -718,3 +722,248 @@ Recommendations:"""
             return True, None
         else:
             return False, error_msg
+    
+    def _detect_plagiarism_hf(self, text):
+        """
+        Detect plagiarism using Hugging Face API.
+        Compares resume text against common resume patterns and templates.
+        Returns plagiarism percentage (0-100).
+        """
+        try:
+            if not self.api_key:
+                return None
+            
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Create comparison prompts for plagiarism detection
+            plagiarism_prompt = f"""Analyze this resume for plagiarism and template usage. 
+Identify sections that appear to be copied from templates or other standard resumes.
+Resume text:
+{text}
+
+Provide analysis in JSON format: {{"plagiarism_percentage": X, "detected_templates": ["template1", "template2"], "suspicious_sections": ["section1", "section2"]}}
+Plagiarism percentage should be 0-100 where 100 is completely copied."""
+            
+            payload = {
+                "inputs": plagiarism_prompt,
+                "parameters": {
+                    "max_new_tokens": 300,
+                    "temperature": 0.3,
+                    "return_full_text": False
+                }
+            }
+            
+            model_name = Config.QUESTION_GENERATION_MODEL
+            api_endpoint = f"https://api-inference.huggingface.co/models/{model_name}"
+            
+            response = requests.post(
+                api_endpoint,
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                generated_text = result[0].get('generated_text', '') if isinstance(result, list) else result.get('generated_text', '')
+                
+                # Try to extract JSON from response
+                try:
+                    json_start = generated_text.find('{')
+                    json_end = generated_text.rfind('}') + 1
+                    if json_start != -1 and json_end > json_start:
+                        json_text = generated_text[json_start:json_end]
+                        plagiarism_data = json.loads(json_text)
+                        
+                        plagiarism_percent = plagiarism_data.get('plagiarism_percentage', 0)
+                        # Ensure it's between 0-100
+                        plagiarism_percent = max(0, min(100, float(plagiarism_percent)))
+                        
+                        return {
+                            'percentage': plagiarism_percent,
+                            'detected_templates': plagiarism_data.get('detected_templates', []),
+                            'suspicious_sections': plagiarism_data.get('suspicious_sections', []),
+                            'source': 'huggingface'
+                        }
+                except (json.JSONDecodeError, ValueError, KeyError) as e:
+                    print(f"Error parsing HF plagiarism response: {e}")
+                    return None
+            
+            return None
+            
+        except Exception as e:
+            print(f"Error in HF plagiarism detection: {e}")
+            return None
+    
+    def _detect_plagiarism_router_ai(self, text):
+        """
+        Detect plagiarism using Router AI (OpenRouter) API.
+        Uses advanced AI models to identify copied content and lack of authenticity.
+        Returns plagiarism percentage (0-100).
+        """
+        try:
+            if not Config.ROUTER_API_KEY:
+                return None
+            
+            headers = {
+                "Authorization": f"Bearer {Config.ROUTER_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            # Create plagiarism detection prompt
+            plagiarism_prompt = f"""You are an expert resume plagiarism detector. Analyze this resume for:
+1. Copied content from job descriptions or templates
+2. Generic/templated language vs personal authentic writing
+3. Inconsistencies that suggest copying
+4. Overuse of buzzwords without context
+
+Resume:
+{text}
+
+Respond ONLY with JSON (no markdown, no code blocks):
+{{"plagiarism_percentage": integer 0-100, "authenticity_score": integer 0-100, "observations": ["observation1", "observation2"], "risk_level": "low/medium/high"}}
+
+Plagiarism % = how much appears copied (100 = fully plagiarized)
+Authenticity = how genuine/personal it sounds (100 = completely authentic)
+Risk level = hiring risk due to plagiarism"""
+            
+            payload = {
+                "model": "gpt-3.5-turbo",  # Using a capable model via OpenRouter
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": plagiarism_prompt
+                    }
+                ],
+                "temperature": 0.3,
+                "max_tokens": 300
+            }
+            
+            response = requests.post(
+                Config.ROUTER_API_URL,
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                message_content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+                
+                # Try to extract JSON from response
+                try:
+                    json_start = message_content.find('{')
+                    json_end = message_content.rfind('}') + 1
+                    if json_start != -1 and json_end > json_start:
+                        json_text = message_content[json_start:json_end]
+                        plagiarism_data = json.loads(json_text)
+                        
+                        plagiarism_percent = plagiarism_data.get('plagiarism_percentage', 0)
+                        authenticity_score = plagiarism_data.get('authenticity_score', 50)
+                        
+                        # Ensure values are in valid ranges
+                        plagiarism_percent = max(0, min(100, float(plagiarism_percent)))
+                        authenticity_score = max(0, min(100, float(authenticity_score)))
+                        
+                        return {
+                            'percentage': plagiarism_percent,
+                            'authenticity_score': authenticity_score,
+                            'observations': plagiarism_data.get('observations', []),
+                            'risk_level': plagiarism_data.get('risk_level', 'unknown'),
+                            'source': 'router_ai'
+                        }
+                except (json.JSONDecodeError, ValueError, KeyError) as e:
+                    print(f"Error parsing Router AI response: {e}")
+                    return None
+            else:
+                print(f"Router AI API error: {response.status_code}")
+                return None
+            
+            return None
+            
+        except Exception as e:
+            print(f"Error in Router AI plagiarism detection: {e}")
+            return None
+    
+    def _get_plagiarism_percentage(self, text):
+        """
+        Get overall plagiarism detection score using multiple sources.
+        Combines Hugging Face and Router AI results.
+        Returns comprehensive plagiarism analysis.
+        """
+        try:
+            # Get plagiarism scores from both sources
+            hf_result = self._detect_plagiarism_hf(text)
+            router_result = self._detect_plagiarism_router_ai(text)
+            
+            overall_result = {
+                'percentage': 0.0,
+                'authenticity_score': 50.0,
+                'risk_level': 'low',
+                'sources_checked': [],
+                'details': {}
+            }
+            
+            plagiarism_scores = []
+            
+            # Process Hugging Face result
+            if hf_result:
+                overall_result['sources_checked'].append('huggingface')
+                overall_result['details']['huggingface'] = {
+                    'percentage': hf_result.get('percentage', 0),
+                    'detected_templates': hf_result.get('detected_templates', []),
+                    'suspicious_sections': hf_result.get('suspicious_sections', [])
+                }
+                plagiarism_scores.append(hf_result.get('percentage', 0))
+            
+            # Process Router AI result
+            if router_result:
+                overall_result['sources_checked'].append('router_ai')
+                overall_result['details']['router_ai'] = {
+                    'percentage': router_result.get('percentage', 0),
+                    'authenticity_score': router_result.get('authenticity_score', 50),
+                    'observations': router_result.get('observations', []),
+                    'risk_level': router_result.get('risk_level', 'unknown')
+                }
+                plagiarism_scores.append(router_result.get('percentage', 0))
+                overall_result['authenticity_score'] = router_result.get('authenticity_score', 50)
+                overall_result['risk_level'] = router_result.get('risk_level', 'low')
+            
+            # Calculate overall plagiarism percentage (average of all sources)
+            if plagiarism_scores:
+                overall_result['percentage'] = sum(plagiarism_scores) / len(plagiarism_scores)
+            
+            # If no sources available, return default
+            if not overall_result['sources_checked']:
+                return {
+                    'percentage': 0.0,
+                    'authenticity_score': 50.0,
+                    'risk_level': 'unknown',
+                    'sources_checked': [],
+                    'details': {},
+                    'message': 'Plagiarism detection unavailable - API keys not configured'
+                }
+            
+            # Determine final risk level based on plagiarism percentage
+            if overall_result['percentage'] >= 70:
+                overall_result['risk_level'] = 'high'
+            elif overall_result['percentage'] >= 40:
+                overall_result['risk_level'] = 'medium'
+            else:
+                overall_result['risk_level'] = 'low'
+            
+            return overall_result
+            
+        except Exception as e:
+            print(f"Error in plagiarism detection: {e}")
+            return {
+                'percentage': 0.0,
+                'authenticity_score': 50.0,
+                'risk_level': 'unknown',
+                'sources_checked': [],
+                'details': {},
+                'error': str(e)
+            }
