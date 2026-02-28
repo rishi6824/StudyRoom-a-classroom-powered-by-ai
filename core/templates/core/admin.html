@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Interview Management{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>📊 Interview Management Dashboard</h1>
+            <p class="dashboard-subtitle">Monitor and manage all interview activities</p>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card total">
+                <div class="metric-icon">📝</div>
+                <div class="metric-content">
+                    <h3>{{ stats.total_interviews }}</h3>
+                    <p>Total Interviews</p>
+                </div>
+            </div>
+            <div class="metric-card completed">
+                <div class="metric-icon">✅</div>
+                <div class="metric-content">
+                    <h3>{{ stats.completed_interviews }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+            <div class="metric-card in-progress">
+                <div class="metric-icon">⏳</div>
+                <div class="metric-content">
+                    <h3>{{ stats.in_progress_interviews }}</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+            <div class="metric-card average">
+                <div class="metric-icon">📈</div>
+                <div class="metric-content">
+                    <h3>{{ stats.avg_score|default:0|floatformat:1 }}</h3>
+                    <p>Average Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h2>📊 Score Distribution</h2>
+                <canvas id="scoreChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>📅 Interview Status Overview</h2>
+                <canvas id="statusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Job Roles Chart -->
+        <div class="charts-section">
+            <div class="chart-container full-width">
+                <h2>💼 Job Roles Distribution</h2>
+                <canvas id="jobRoleChart" width="800" height="200"></canvas>
+            </div>
+        </div>
+
+
+        <!-- Recent Interviews -->
+        <div class="recent-interviews">
+            <h2>🕒 Recent Interviews</h2>
+            <div class="interviews-grid">
+                {% for interview in interviews|slice:":6" %}
+                <div class="interview-card">
+                    <div class="interview-header">
+                        <h4>{{ interview.candidate_name }}</h4>
+                        {{ interview.status|title }}
+                    </div>
+                    <div class="interview-details">
+                        <p><strong>Role:</strong> {{ interview.job_role|title }}</p>
+                        <p><strong>Questions:</strong> {{ interview.completed_questions }}/{{ interview.total_questions
+                            }}</p>
+                        {% if interview.overall_score %}
+                        <p><strong>Score:</strong> {{ interview.overall_score|floatformat:1 }}/10</p>
+                        {% endif %}
+                        <p><strong>Started:</strong> {{ interview.created_at|slice:":19" }}</p>
+                    </div>
+                    <div class="interview-actions">
+                        <a href="{% url 'admin_interview_detail', interview_id=interview.id) }}"
+                            class="btn btn-small btn-primary">View Details</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Full Interviews Table -->
+        <div class="full-table-section">
+            <h2>📋 All Interviews</h2>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Candidate Name</th>
+                            <th>Job Role</th>
+                            <th>Status</th>
+                            <th>Questions</th>
+                            <th>Score</th>
+                            <th>Start Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for interview in interviews %}
+                        <tr>
+                            <td>{{ interview.id }}</td>
+                            <td>{{ interview.candidate_name }}</td>
+                            <td>{{ interview.job_role.replace('_', ' ').title() }}</td>
+                            <td>
+                                <span class="status-badge status-{{ interview.status }}">
+                                    {{ interview.status.replace('_', ' ').title() }}
+                                </span>
+                            </td>
+                            <td>{{ interview.completed_questions }}/{{ interview.total_questions }}</td>
+                            <td>
+                                {% if interview.overall_score %}
+                                <span class="score-display">{{ "%.1f"|format(interview.overall_score) }}/10</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>{{ interview.created_at[:19] }}</td>
+                            <td>
+                                <a href="{% url 'admin_interview_detail' interview.id %}"
+                                    class="btn btn-small btn-primary">View</a>
+                                <form method="post" action="{% url 'admin_delete_interview' interview.id %}"
+                                    style="display: inline;"
+                                    onsubmit="return confirm('Are you sure you want to delete this interview?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if not interviews %}
+            <div class="no-data">
+                <p>📭 No interviews found. Interviews will appear here once candidates complete them.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Prepare data for charts
+        const stats = {
+            completed_interviews: {{ stats.completed_interviews|default: 0
+    }},
+        in_progress_interviews: {{ stats.in_progress_interviews |default: 0 }},
+        failed_interviews: {{ stats.failed_interviews |default: 0 }}
+        };
+    const scoreDistribution = {};
+    const jobRoleStats = [];
+
+    // Score Distribution Chart
+    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(scoreCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(scoreDistribution),
+            datasets: [{
+                label: 'Number of Interviews',
+                data: Object.values(scoreDistribution),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(255, 205, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Interview Score Distribution'
+                }
+            }
+        }
+    });
+
+    // Status Overview Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'In Progress', 'Failed'],
+            datasets: [{
+                data: [stats.completed_interviews, stats.in_progress_interviews, stats.failed_interviews || 0],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 205, 86, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Interview Status Overview'
+                }
+            }
+        }
+    });
+
+    // Job Roles Chart
+    const jobRoleCtx = document.getElementById('jobRoleChart').getContext('2d');
+    const jobRoleLabels = jobRoleStats.map(stat => stat.job_role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    const jobRoleData = jobRoleStats.map(stat => stat.total);
+
+    new Chart(jobRoleCtx, {
+        type: 'horizontalBar',
+        data: {
+            labels: jobRoleLabels,
+            datasets: [{
+                label: 'Number of Interviews',
+                data: jobRoleData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Interviews by Job Role'
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    /* Dashboard Layout */
+    .admin-dashboard {
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+    }
+
+    .admin-dashboard .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Header */
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Metrics Cards */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .metric-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .metric-icon {
+        font-size: 3rem;
+        margin-right: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .metric-content h3 {
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem 0;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .metric-content p {
+        margin: 0;
+        color: #666;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .metric-card.total {
+        border-left: 5px solid #667eea;
+    }
+
+    .metric-card.completed {
+        border-left: 5px solid #28a745;
+    }
+
+    .metric-card.in-progress {
+        border-left: 5px solid #ffc107;
+    }
+
+    .metric-card.average {
+        border-left: 5px solid #dc3545;
+    }
+
+    /* Charts Section */
+    .charts-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-container.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .chart-container h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 1.5rem;
+    }
+
+    /* Recent Interviews */
+    .recent-interviews {
+        margin-bottom: 3rem;
+    }
+
+    .recent-interviews h2 {
+        color: white;
+        margin-bottom: 2rem;
+        text-align: center;
+        font-size: 2rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .interviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .interview-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .interview-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .interview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .interview-header h4 {
+        margin: 0;
+        color: #333;
+        font-size: 1.2rem;
+    }
+
+    .interview-details p {
+        margin: 0.5rem 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .interview-details strong {
+        color: #333;
+    }
+
+    .interview-actions {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    /* Full Table Section */
+    .full-table-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .full-table-section h2 {
+        color: #333;
+        margin-bottom: 2rem;
+        text-align: center;
+        font-size: 1.8rem;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .admin-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        color: #333;
+    }
+
+    .admin-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-in_progress {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Score Display */
+    .score-display {
+        font-weight: bold;
+        color: #28a745;
+        font-size: 1.1rem;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .btn-small {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    /* No Data State */
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+
+    .no-data p {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .admin-dashboard .container {
+            padding: 0 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+        }
+
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
+
+        .interviews-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-card {
+            padding: 1.5rem;
+        }
+
+        .metric-icon {
+            font-size: 2.5rem;
+            margin-right: 1rem;
+        }
+
+        .metric-content h3 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}

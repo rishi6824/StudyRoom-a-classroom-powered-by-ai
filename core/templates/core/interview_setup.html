@@ -1,0 +1,174 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Interview Setup - Rishi{% endblock %}
+
+{% block content %}
+<div class="setup-container">
+    <div class="container">
+        <div class="setup-card">
+            <h2>🎯 Start Your Interview</h2>
+            <div class="welcome-message">
+                <p>Welcome to your AI-powered interview with Rishi!</p>
+                <p>Please enter your name to begin the assessment.</p>
+            </div>
+
+            <div class="name-form">
+                <h3>Enter Your Name</h3>
+                <form id="nameForm" method="post" action="{% url 'start_interview_with_name' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" id="candidate_name" name="candidate_name" placeholder="Enter your full name"
+                            required maxlength="100">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        🚀 Start Interview
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const nameForm = document.getElementById('nameForm');
+        if (!nameForm) return;
+
+        nameForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('candidate_name').value.trim();
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Starting Interview...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(document.getElementById('nameForm'));
+                const params = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    params.append(key, value);
+                }
+
+                console.log('DEBUG: Sending start_interview POST');
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const response = await fetch('{% url "start_interview_with_name" %}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: params.toString()
+                });
+
+                if (!response.ok) {
+                    console.error('Start interview fetch failed', response.status);
+                    const text = await response.text();
+                    console.error('Response body:', text);
+                    throw new Error('Failed to start interview');
+                }
+
+                // Some servers may redirect for non-AJAX; handle HTML redirect responses
+                const contentType = response.headers.get('Content-Type') || '';
+                let result = null;
+                if (contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    // If server returned HTML (redirect), just navigate to the interview room
+                    window.location.href = '{% url "interview_room" %}';
+                    return;
+                }
+
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error starting interview:', error);
+                alert('An error occurred. Please check the console and try again.');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    });
+</script>
+
+<style>
+    .setup-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .setup-card {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .otp-display {
+        margin-bottom: 2rem;
+    }
+
+    .otp-code {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        letter-spacing: 0.5rem;
+    }
+
+    .otp-note {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .name-form h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    #nameForm {
+        margin-top: 1rem;
+    }
+
+    #nameForm input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e1e8ed;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    #nameForm input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .btn-large {
+        margin-top: 1.5rem;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}

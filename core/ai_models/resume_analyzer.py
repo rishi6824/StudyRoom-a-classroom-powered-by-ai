@@ -1,0 +1,509 @@
+try:
+    import PyPDF2
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+from docx import Document
+import re
+import os
+import requests
+import json
+from .config import Config
+
+class ResumeAnalyzer:
+    def __init__(self):
+        self.api_key = Config.HUGGINGFACE_API_KEY
+        self.api_url = Config.HUGGINGFACE_API_URL
+        self.sentiment_model = Config.SENTIMENT_MODEL
+        self.analysis_model = Config.ANSWER_ANALYSIS_MODEL
+        
+        self.skill_categories = {
+            'programming': ['python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin'],
+            'web_tech': ['html', 'css', 'react', 'angular', 'vue', 'django', 'flask', 'node.js', 'express'],
+            'databases': ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'oracle'],
+            'cloud': ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'jenkins'],
+            'data_science': ['pandas', 'numpy', 'tensorflow', 'pytorch', 'scikit-learn', 'r', 'matplotlib'],
+            'soft_skills': ['communication', 'leadership', 'teamwork', 'problem-solving', 'creativity', 'adaptability']
+        }
+    
+    def parse_resume(self, file_path):
+        filename = file_path.lower()
+        
+        if filename.endswith('.pdf'):
+            return self._parse_pdf(file_path)
+        elif filename.endswith('.docx'):
+            return self._parse_docx(file_path)
+        elif filename.endswith('.txt'):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        else:
+            raise ValueError("Unsupported file format")
+    
+    def _parse_pdf(self, file_path):
+        if not PDF_SUPPORT:
+            return "PDF parsing not available - PyPDF2 not installed"
+
+        try:
+            with open(file_path, 'rb') as file:
+                pdf_reader = PyPDF2.PdfReader(file)
+                text = ""
+                for page in pdf_reader.pages:
+                    text += page.extract_text()
+                return text
+        except Exception as e:
+            return f"Error reading PDF: {str(e)}"
+    
+    def _parse_docx(self, file_path):
+        try:
+            doc = Document(file_path)
+            text = ""
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+            return text
+        except Exception as e:
+            return f"Error reading DOCX: {str(e)}"
+    
+    def analyze_resume_file(self, file_path):
+        text = self.parse_resume(file_path)
+        return self.analyze_resume_text(text)
+    
+    def analyze_resume_text(self, text):
+        analysis = {}
+        
+        # Basic text analysis
+        words = text.split()
+        analysis['word_count'] = len(words)
+        analysis['char_count'] = len(text)
+        
+        # Extract skills
+        analysis['skills'] = self._extract_skills(text)
+        
+        # Extract experience
+        analysis['experience'] = self._extract_experience(text)
+        
+        # Extract education
+        analysis['education'] = self._extract_education(text)
+        
+        # Calculate scores
+        analysis['scores'] = self._calculate_scores(text, analysis['skills'])
+        
+        # Generate recommendations
+        analysis['recommendations'] = self._generate_recommendations(analysis)
+        
+        return analysis
+    
+    def _extract_skills(self, text):
+        text_lower = text.lower()
+        found_skills = {}
+        
+        for category, skills in self.skill_categories.items():
+            category_skills = []
+            for skill in skills:
+                if skill in text_lower:
+                    category_skills.append(skill.title())
+            
+            if category_skills:
+                found_skills[category] = category_skills
+        
+        return found_skills
+    
+    def _extract_experience(self, text):
+        experience = {}
+        
+        # Extract years of experience
+        years_pattern = r'(\d+)\s*(?:\+)?\s*years?(?:\s+of)?\s*experience'
+        match = re.search(years_pattern, text, re.IGNORECASE)
+        experience['years'] = match.group(1) if match else "Not specified"
+        
+        return experience
+    
+    def _extract_education(self, text):
+        education = {}
+        
+        # Extract degrees
+        degrees = ['bachelor', 'master', 'phd', 'mba', 'b\.?tech', 'm\.?tech', 'b\.?e', 'm\.?e']
+        degree_pattern = r'\b(' + '|'.join(degrees) + r')\b'
+        matches = re.findall(degree_pattern, text, re.IGNORECASE)
+        education['degrees'] = list(set(matches))
+        
+        return education
+    
+    def _calculate_scores(self, text, skills):
+        """Calculate scores using Hugging Face API for all predictions"""
+        scores = {}
+        
+        # Try to use Hugging Face API for predictions
+        hf_scores = self._predict_scores_with_hf(text, skills)
+        
+        if hf_scores:
+            # Use Hugging Face predictions
+            scores = hf_scores
+        else:
+            # Fallback to basic calculations if API fails
+            total_skills = sum(len(skills_list) for skills_list in skills.values())
+            scores['skills_score'] = min(10, total_skills / 2)
+            
+            exp_score = 0
+            if any(str(i) in text for i in range(1, 6)):
+                exp_score = min(10, 5)
+            scores['experience_score'] = exp_score
+            
+            edu_score = min(10, len(self._extract_education(text)['degrees']) * 3)
+            scores['education_score'] = edu_score
+            
+            scores['overall_score'] = (scores['skills_score'] + scores['experience_score'] + scores['education_score']) / 3
+        
+        return scores
+    
+    def _predict_scores_with_hf(self, text, skills):
+        """Use Hugging Face API to predict resume scores"""
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Prepare resume summary for analysis
+            total_skills = sum(len(skills_list) for skills_list in skills.values())
+            skills_summary = ", ".join([skill for skill_list in skills.values() for skill in skill_list[:5]])
+            education = self._extract_education(text)
+            experience = self._extract_experience(text)
+            
+            # Create prompt for resume evaluation
+            resume_summary = f"""Resume Analysis:
+Skills found: {skills_summary} (Total: {total_skills} skills)
+Education: {', '.join(education.get('degrees', [])) if education.get('degrees') else 'Not specified'}
+Experience: {experience.get('years', 'Not specified')} years
+Resume length: {len(text)} characters
+
+Evaluate this resume on a scale of 0-10 for:
+1. Skills Score (based on technical skills found)
+2. Experience Score (based on years of experience and achievements)
+3. Education Score (based on degrees and qualifications)
+4. Overall Score (composite of all factors)
+
+Return scores as JSON: {{"skills_score": X, "experience_score": Y, "education_score": Z, "overall_score": W}}
+Scores should be between 0.0 and 10.0."""
+            
+            # Use text generation model for evaluation
+            payload = {
+                "inputs": resume_summary,
+                "parameters": {
+                    "max_new_tokens": 200,
+                    "temperature": 0.3,
+                    "return_full_text": False
+                }
+            }
+            
+            model_name = Config.QUESTION_GENERATION_MODEL
+            api_endpoint = f"https://api-inference.huggingface.co/models/{model_name}"
+            
+            response = requests.post(
+                api_endpoint,
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                generated_text = result[0].get('generated_text', '') if isinstance(result, list) else result.get('generated_text', '')
+                
+                # Try to extract JSON from response
+                try:
+                    json_start = generated_text.find('{')
+                    json_end = generated_text.rfind('}') + 1
+                    if json_start != -1 and json_end > json_start:
+                        json_text = generated_text[json_start:json_end]
+                        hf_scores = json.loads(json_text)
+                        
+                        # Validate and normalize scores
+                        validated_scores = {}
+                        for key in ['skills_score', 'experience_score', 'education_score', 'overall_score']:
+                            score = hf_scores.get(key, 0)
+                            # Ensure score is between 0-10
+                            validated_scores[key] = max(0.0, min(10.0, float(score)))
+                        
+                        # Recalculate overall if not provided or recalculate average
+                        if 'overall_score' not in validated_scores or not validated_scores['overall_score']:
+                            validated_scores['overall_score'] = sum([
+                                validated_scores.get('skills_score', 0),
+                                validated_scores.get('experience_score', 0),
+                                validated_scores.get('education_score', 0)
+                            ]) / 3
+                        
+                        return validated_scores
+                except (json.JSONDecodeError, ValueError, KeyError) as e:
+                    print(f"Error parsing HF response: {e}")
+            
+            # Alternative: Use zero-shot classification for each aspect
+            return self._predict_scores_with_classification(text, skills, headers)
+            
+        except Exception as e:
+            print(f"Error in HF resume scoring: {e}")
+            return None
+    
+    def _predict_scores_with_classification(self, text, skills, headers):
+        """Use Hugging Face classification models to predict scores"""
+        try:
+            scores = {}
+            
+            # Prepare text segments for evaluation
+            total_skills = sum(len(skills_list) for skills_list in skills.values())
+            skills_text = f"Resume has {total_skills} technical skills: {', '.join([skill for skill_list in skills.values() for skill in skill_list[:3]])}"
+            
+            # Use classification model to evaluate each aspect
+            # For skills score
+            try:
+                skills_payload = {
+                    "inputs": skills_text,
+                    "parameters": {
+                        "candidate_labels": ["excellent (8-10)", "good (6-7)", "average (4-5)", "poor (0-3)"],
+                        "multi_label": False
+                    }
+                }
+                
+                if '/mnli' in self.analysis_model or '/bart' in self.analysis_model:
+                    api_endpoint = f"https://api-inference.huggingface.co/models/{self.analysis_model}"
+                    response = requests.post(api_endpoint, headers=headers, json=skills_payload, timeout=15)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if isinstance(result, list):
+                            result = result[0]
+                        if isinstance(result, list):
+                            result = result[0]
+                        
+                        label = result.get('label', '').lower()
+                        score_value = result.get('score', 0.5)
+                        
+                        # Map labels to scores
+                        if 'excellent' in label:
+                            scores['skills_score'] = 8.0 + (score_value * 2.0)
+                        elif 'good' in label:
+                            scores['skills_score'] = 6.0 + (score_value * 1.0)
+                        elif 'average' in label:
+                            scores['skills_score'] = 4.0 + (score_value * 1.0)
+                        else:
+                            scores['skills_score'] = score_value * 3.0
+                        
+                        scores['skills_score'] = max(0.0, min(10.0, scores['skills_score']))
+            except Exception as e:
+                print(f"Error in skills classification: {e}")
+            
+            # For experience and education, use similar approach
+            # Experience evaluation
+            experience = self._extract_experience(text)
+            exp_text = f"Resume shows {experience.get('years', 'unspecified')} years of experience"
+            
+            try:
+                exp_payload = {
+                    "inputs": exp_text,
+                    "parameters": {
+                        "candidate_labels": ["strong experience (8-10)", "moderate experience (5-7)", "limited experience (2-4)", "minimal experience (0-2)"],
+                        "multi_label": False
+                    }
+                }
+                
+                if '/mnli' in self.analysis_model:
+                    api_endpoint = f"https://api-inference.huggingface.co/models/{self.analysis_model}"
+                    response = requests.post(api_endpoint, headers=headers, json=exp_payload, timeout=15)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if isinstance(result, list):
+                            result = result[0]
+                        if isinstance(result, list):
+                            result = result[0]
+                        
+                        label = result.get('label', '').lower()
+                        score_value = result.get('score', 0.5)
+                        
+                        if 'strong' in label:
+                            scores['experience_score'] = 8.0 + (score_value * 2.0)
+                        elif 'moderate' in label:
+                            scores['experience_score'] = 5.0 + (score_value * 2.0)
+                        elif 'limited' in label:
+                            scores['experience_score'] = 2.0 + (score_value * 2.0)
+                        else:
+                            scores['experience_score'] = score_value * 2.0
+                        
+                        scores['experience_score'] = max(0.0, min(10.0, scores['experience_score']))
+            except Exception as e:
+                print(f"Error in experience classification: {e}")
+            
+            # Education evaluation
+            education = self._extract_education(text)
+            edu_text = f"Resume shows education: {', '.join(education.get('degrees', [])) if education.get('degrees') else 'Not specified'}"
+            
+            try:
+                edu_payload = {
+                    "inputs": edu_text,
+                    "parameters": {
+                        "candidate_labels": ["highly qualified (8-10)", "well qualified (6-7)", "adequately qualified (4-5)", "needs improvement (0-3)"],
+                        "multi_label": False
+                    }
+                }
+                
+                if '/mnli' in self.analysis_model:
+                    api_endpoint = f"https://api-inference.huggingface.co/models/{self.analysis_model}"
+                    response = requests.post(api_endpoint, headers=headers, json=edu_payload, timeout=15)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if isinstance(result, list):
+                            result = result[0]
+                        if isinstance(result, list):
+                            result = result[0]
+                        
+                        label = result.get('label', '').lower()
+                        score_value = result.get('score', 0.5)
+                        
+                        if 'highly' in label:
+                            scores['education_score'] = 8.0 + (score_value * 2.0)
+                        elif 'well' in label:
+                            scores['education_score'] = 6.0 + (score_value * 1.0)
+                        elif 'adequately' in label:
+                            scores['education_score'] = 4.0 + (score_value * 1.0)
+                        else:
+                            scores['education_score'] = score_value * 3.0
+                        
+                        scores['education_score'] = max(0.0, min(10.0, scores['education_score']))
+            except Exception as e:
+                print(f"Error in education classification: {e}")
+            
+            # Calculate overall score
+            if scores:
+                # Fill missing scores with defaults
+                if 'skills_score' not in scores:
+                    total_skills = sum(len(skills_list) for skills_list in skills.values())
+                    scores['skills_score'] = min(10, total_skills / 2)
+                
+                if 'experience_score' not in scores:
+                    scores['experience_score'] = 5.0
+                
+                if 'education_score' not in scores:
+                    edu = self._extract_education(text)
+                    scores['education_score'] = min(10, len(edu.get('degrees', [])) * 3)
+                
+                scores['overall_score'] = (
+                    scores.get('skills_score', 0) + 
+                    scores.get('experience_score', 0) + 
+                    scores.get('education_score', 0)
+                ) / 3
+                
+                return scores
+                
+        except Exception as e:
+            print(f"Error in classification-based scoring: {e}")
+        
+        return None
+    
+    def _generate_recommendations(self, analysis):
+        """Generate recommendations using Hugging Face API"""
+        # Try to generate with Hugging Face API
+        hf_recommendations = self._generate_recommendations_with_hf(analysis)
+        
+        if hf_recommendations and len(hf_recommendations) > 0:
+            return hf_recommendations
+        
+        # Fallback to basic recommendations
+        recommendations = []
+        scores = analysis['scores']
+        
+        if scores['skills_score'] < 6:
+            recommendations.append("Consider adding more technical skills to your resume")
+        
+        if scores['experience_score'] < 5:
+            recommendations.append("Highlight your work experience with specific achievements")
+        
+        if analysis['word_count'] < 200:
+            recommendations.append("Your resume seems brief. Consider adding more details about your projects and achievements")
+        
+        if not recommendations:
+            recommendations.append("Your resume looks strong! Focus on preparing for behavioral questions")
+        
+        return recommendations
+    
+    def _generate_recommendations_with_hf(self, analysis):
+        """Use Hugging Face API to generate personalized recommendations"""
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            scores = analysis['scores']
+            skills = analysis.get('skills', {})
+            word_count = analysis.get('word_count', 0)
+            
+            # Create prompt for recommendations
+            prompt = f"""Based on this resume analysis:
+- Skills Score: {scores.get('skills_score', 0):.1f}/10
+- Experience Score: {scores.get('experience_score', 0):.1f}/10
+- Education Score: {scores.get('education_score', 0):.1f}/10
+- Overall Score: {scores.get('overall_score', 0):.1f}/10
+- Resume length: {word_count} words
+- Skills found: {len([s for skill_list in skills.values() for s in skill_list])} technical skills
+
+Provide 2-3 specific, actionable recommendations to improve this resume. 
+Format as a JSON array of strings: ["recommendation1", "recommendation2", "recommendation3"]
+
+Recommendations:"""
+            
+            payload = {
+                "inputs": prompt,
+                "parameters": {
+                    "max_new_tokens": 300,
+                    "temperature": 0.7,
+                    "return_full_text": False
+                }
+            }
+            
+            model_name = Config.QUESTION_GENERATION_MODEL
+            api_endpoint = f"https://api-inference.huggingface.co/models/{model_name}"
+            
+            response = requests.post(
+                api_endpoint,
+                headers=headers,
+                json=payload,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                generated_text = result[0].get('generated_text', '') if isinstance(result, list) else result.get('generated_text', '')
+                
+                # Try to extract JSON array from response
+                try:
+                    json_start = generated_text.find('[')
+                    json_end = generated_text.rfind(']') + 1
+                    if json_start != -1 and json_end > json_start:
+                        json_text = generated_text[json_start:json_end]
+                        recommendations = json.loads(json_text)
+                        
+                        # Validate and clean recommendations
+                        if isinstance(recommendations, list):
+                            cleaned = [str(r).strip() for r in recommendations if r and len(str(r).strip()) > 10]
+                            if cleaned:
+                                return cleaned[:4]  # Limit to 4 recommendations
+                except (json.JSONDecodeError, ValueError) as e:
+                    print(f"Error parsing HF recommendations: {e}")
+                    
+                    # Try to extract recommendations from text
+                    lines = generated_text.split('\n')
+                    recommendations = []
+                    for line in lines:
+                        line = line.strip().lstrip('- ').lstrip('* ').strip()
+                        if line and len(line) > 15 and ('recommend' in line.lower() or 'suggest' in line.lower() or 'improve' in line.lower() or 'add' in line.lower()):
+                            recommendations.append(line)
+                            if len(recommendations) >= 3:
+                                break
+                    
+                    if recommendations:
+                        return recommendations
+                        
+        except Exception as e:
+            print(f"Error generating HF recommendations: {e}")
+        
+        return None

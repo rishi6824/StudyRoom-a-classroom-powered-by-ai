@@ -12,6 +12,15 @@ from .models import Profile, Assignment, Submission, Interview, Resume, Proctori
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .ai_engine import evaluate_assignment, generate_interview_recommendation, analyze_resume, evaluate_proctoring_response, analyze_proctoring_session
 from .utils import extract_resume_text, parse_ai_evaluation_response
+from datetime import datetime
+from .ai_models.question_generator import QuestionGenerator
+from .ai_models.ai_interviewer import AIInterviewer
+from .ai_models.physical_analyzer import PhysicalAnalyzer
+from .ai_models.config import Config
+
+question_generator = QuestionGenerator()
+ai_interviewer = AIInterviewer()
+physical_analyzer = PhysicalAnalyzer()
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
@@ -110,43 +119,363 @@ def submit_assignment(request, pk):
     })
 
 @login_required
-def start_interview(request):
+def interview_setup(request):
     if request.user.profile.role != 'STUDENT':
         return redirect('dashboard')
-    return render(request, 'core/interview_start.html')
+    return render(request, 'core/interview_setup.html')
+
+@login_required
+def start_interview_with_name(request):
+    if request.user.profile.role != 'STUDENT':
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        candidate_name = request.POST.get('candidate_name', '').strip()
+    else:
+        candidate_name = request.GET.get('candidate_name', '').strip()
+
+    if not candidate_name:
+        return JsonResponse({'error': 'Candidate name is required'}, status=400)
+
+    # Clear previous interview specific session vars
+    for key in ['candidate_name', 'job_role', 'interview_id', 'current_question', 'score', 'responses', 'start_time', 'enable_voice', 'questions', 'total_questions_target']:
+        if key in request.session:
+            del request.session[key]
+
+    request.session['candidate_name'] = candidate_name
+    request.session['job_role'] = 'software_engineer'
+    
+    interview = Interview.objects.create(
+        student=request.user,
+        role_type='software_engineer',
+        score=0,
+        ai_recommendation=''
+    )
+    request.session['interview_id'] = interview.id
+
+    request.session['current_question'] = 0
+    request.session['score'] = 0
+    request.session['responses'] = []
+    request.session['start_time'] = datetime.now().isoformat()
+    request.session['enable_voice'] = True
+
+    target_total = max(Config.MIN_QUESTIONS, min(Config.MAX_QUESTIONS, Config.DEFAULT_QUESTIONS))
+    request.session['total_questions_target'] = target_total
+
+    resume_analysis = request.session.get('resume_analysis', {})
+    print(f"DEBUG: Generating questions for {candidate_name}...")
+    questions = question_generator.generate_questions_raw('software_engineer', resume_analysis, target_total)
+    print(f"DEBUG: Generated {len(questions) if questions else 0} questions.")
+
+    if not questions:
+        questions = [{
+            "question": "Tell me about yourself and your most relevant experience for this role.",
+            "type": "behavioral",
+            "difficulty": "easy"
+        }]
+
+    request.session['questions'] = questions
+    
+    xreq = request.headers.get('X-Requested-With', '')
+    accept_header = request.headers.get('Accept', '')
+    if xreq != 'XMLHttpRequest' and 'application/json' not in accept_header:
+        request.session.modified = True 
+        return redirect('interview_room')
+
+    request.session.modified = True
+    from django.urls import reverse
+    return JsonResponse({
+        'success': True,
+        'redirect': reverse('interview_room')
+    })
 
 @login_required
 def interview_room(request):
     if request.user.profile.role != 'STUDENT':
         return redirect('dashboard')
+        
+    if 'interview_id' not in request.session:
+        return redirect('dashboard')
     
-    # Mock question for now
-    question = "Describe a challenging project you worked on and how you handled it."
-    return render(request, 'core/interview_room.html', {'question': question})
+    if 'total_questions_target' not in request.session:
+        request.session['total_questions_target'] = max(Config.MIN_QUESTIONS, min(Config.MAX_QUESTIONS, Config.DEFAULT_QUESTIONS))
+
+    if 'questions' not in request.session or not request.session['questions']:
+        job_role = request.session.get('job_role', 'software_engineer')
+        resume_analysis = request.session.get('resume_analysis', {})
+        first_batch = question_generator.generate_questions_raw(job_role, resume_analysis, 1)
+        request.session['questions'] = first_batch if first_batch else [{
+            "question": "Tell me about yourself and your most relevant experience for this role.",
+            "type": "behavioral",
+            "difficulty": "easy"
+        }]
+        request.session['current_question'] = 0
+    
+    current_q = request.session.get('current_question', 0)
+    questions = request.session.get('questions', [])
+    target_total = request.session.get('total_questions_target', len(questions))
+    
+    if current_q >= target_total:
+        return redirect('interview_results')
+
+    if current_q >= len(questions):
+        job_role = request.session.get('job_role', 'software_engineer')
+        resume_analysis = request.session.get('resume_analysis', {})
+        prev_answer = None
+        if request.session.get('responses'):
+            prev_answer = request.session['responses'][-1].get('answer')
+        next_q = question_generator.generate_next_question(job_role, resume_analysis, questions, prev_answer)
+        questions.append(next_q)
+        request.session['questions'] = questions
+        request.session.modified = True
+    
+    question = questions[current_q]
+    return render(request, 'core/interview_room.html', {
+        'question': question,
+        'question_num': current_q + 1,
+        'total_questions': target_total,
+        'enable_voice': request.session.get('enable_voice', True)
+    })
+
+@login_required
+def get_next_question(request):
+    if 'interview_id' not in request.session:
+        return JsonResponse({'error': 'No active interview'}, status=400)
+    
+    current_q = request.session.get('current_question', 0)
+    questions = request.session.get('questions', [])
+    target_total = request.session.get('total_questions_target', len(questions))
+    
+    if current_q >= target_total:
+        return JsonResponse({'completed': True})
+    
+    if current_q >= len(questions):
+        job_role = request.session.get('job_role', 'software_engineer')
+        resume_analysis = request.session.get('resume_analysis', {})
+        prev_answer = None
+        if request.session.get('responses'):
+            prev_answer = request.session['responses'][-1].get('answer')
+        next_q = question_generator.generate_next_question(job_role, resume_analysis, questions, prev_answer)
+        questions.append(next_q)
+        request.session['questions'] = questions
+        request.session.modified = True
+
+    question = questions[current_q]
+    return JsonResponse({
+        'question': question['question'],
+        'question_num': current_q + 1,
+        'total_questions': target_total,
+        'type': question.get('type', 'технический')
+    })
+
+@login_required
+@require_http_methods(["POST"])
+def submit_answer(request):
+    if 'interview_id' not in request.session:
+        return JsonResponse({'error': 'No active interview'}, status=400)
+    
+    current_q = request.session.get('current_question', 0)
+    questions = request.session.get('questions', [])
+    
+    if current_q >= len(questions):
+        return JsonResponse({
+            'completed': True,
+            'next_question': current_q,
+            'score': 0,
+            'feedback': 'Interview completed!',
+            'detailed_analysis': {}
+        })
+    
+    answer = request.POST.get('answer', '')
+    job_role = request.session.get('job_role', 'software_engineer')
+    resume_analysis = request.session.get('resume_analysis', {})
+    
+    score, feedback, detailed_analysis = ai_interviewer.analyze_answer(
+        job_role, current_q, answer, resume_analysis
+    )
+    
+    if score >= 8:
+        ai_feedback = f"Excellent! {feedback} That was a well-structured response."
+    elif score >= 6:
+        ai_feedback = f"Good job. {feedback} You're on the right track."
+    elif score >= 4:
+        ai_feedback = f"Okay. {feedback} Let's work on improving this."
+    else:
+        ai_feedback = f"I see. {feedback} We'll practice more on this area."
+    
+    response_data = {
+        'question_index': current_q,
+        'question': questions[current_q]['question'],
+        'answer': answer,
+        'score': score,
+        'feedback': ai_feedback,
+        'detailed_analysis': detailed_analysis
+    }
+    
+    responses = request.session.get('responses', [])
+    responses.append(response_data)
+    request.session['responses'] = responses
+    
+    current_score = request.session.get('score', 0)
+    request.session['score'] = current_score + score
+    request.session['current_question'] = current_q + 1
+    
+    target_total = request.session.get('total_questions_target', len(questions))
+    completed = request.session['current_question'] >= target_total
+
+    if completed:
+        avg_score = request.session['score'] / len(responses) if responses else 0
+        interview_id = request.session.get('interview_id')
+        if interview_id:
+            try:
+                interview = Interview.objects.get(id=interview_id)
+                interview.score = round(avg_score, 1)
+                transcript = "\\n".join([f"Q: {r['question']}\\nA: {r['answer']}" for r in responses])
+                overall_score, rec = generate_interview_recommendation(job_role, transcript)
+                interview.ai_recommendation = rec
+                interview.save()
+            except Exception as e:
+                print(f"Error saving interview: {e}")
+
+    if not completed:
+        next_index = request.session.get('current_question')
+        if next_index >= len(request.session.get('questions', [])):
+            next_q = question_generator.generate_next_question(
+                job_role,
+                resume_analysis,
+                request.session.get('questions', []),
+                last_answer=answer
+            )
+            request.session['questions'].append(next_q)
+            
+    request.session.modified = True
+    
+    return JsonResponse({
+        'next_question': request.session['current_question'],
+        'score': score,
+        'feedback': ai_feedback,
+        'detailed_analysis': detailed_analysis,
+        'completed': completed
+    })
+
+@login_required
+@require_http_methods(["POST"])
+def update_physical_analysis(request):
+    """Update physical analysis with single frame/audio segment"""
+    if 'interview_id' not in request.session:
+        return JsonResponse({'error': 'No active interview'}, status=400)
+    
+    try:
+        current_q = request.session.get('current_question', 0)
+        
+        # Get single frame or audio segment
+        video_frame = request.POST.get('video_frame')  # Base64 encoded
+        audio_segment = request.POST.get('audio_segment')  # Base64 encoded
+        
+        if not video_frame and not audio_segment:
+            return JsonResponse({'success': False, 'error': 'No data provided'})
+        
+        # Initialize storage if needed
+        if 'physical_analysis' not in request.session:
+            request.session['physical_analysis'] = {}
+        
+        if f'question_{current_q}' not in request.session['physical_analysis']:
+            request.session['physical_analysis'][f'question_{current_q}'] = {
+                'confidence': 0.0,
+                'voice_quality': 0.0,
+                'body_language': 0.0,
+                'overall_physical_score': 0.0,
+                'details': {
+                    'confidence_scores': [],
+                    'voice_scores': [],
+                    'posture_scores': [],
+                    'frame_count': 0,
+                    'audio_segment_count': 0
+                }
+            }
+        
+        current_data = request.session['physical_analysis'][f'question_{current_q}']
+        details = current_data['details']
+        
+        # Analyze video frame if provided
+        if video_frame:
+            frame_analysis = physical_analyzer.analyze_video_frame(video_frame)
+            if frame_analysis:
+                details['confidence_scores'].append(frame_analysis.get('confidence', 5.0))
+                details['posture_scores'].append(frame_analysis.get('posture_score', 5.0))
+                details['frame_count'] += 1
+                
+                # Recalculate averages
+                if details['confidence_scores']:
+                    current_data['confidence'] = round(
+                        sum(details['confidence_scores']) / len(details['confidence_scores']), 2
+                    )
+                if details['posture_scores']:
+                    current_data['body_language'] = round(
+                        sum(details['posture_scores']) / len(details['posture_scores']), 2
+                    )
+        
+        # Analyze audio segment if provided
+        if audio_segment:
+            audio_analysis = physical_analyzer.analyze_audio(audio_segment)
+            if audio_analysis:
+                details['voice_scores'].append(audio_analysis.get('voice_score', 5.0))
+                details['audio_segment_count'] += 1
+                
+                # Recalculate average
+                if details['voice_scores']:
+                    current_data['voice_quality'] = round(
+                        sum(details['voice_scores']) / len(details['voice_scores']), 2
+                    )
+        
+        # Recalculate overall physical score
+        current_data['overall_physical_score'] = round(
+            (current_data['confidence'] * Config.CONFIDENCE_WEIGHT +
+             current_data['voice_quality'] * Config.VOICE_WEIGHT +
+             current_data['body_language'] * Config.BODY_LANGUAGE_WEIGHT), 2
+        )
+        
+        request.session.modified = True
+        
+        return JsonResponse({
+            'success': True,
+            'current_analysis': current_data,
+            'summary': {
+                'confidence': current_data['confidence'],
+                'voice_quality': current_data['voice_quality'],
+                'body_language': current_data['body_language'],
+                'overall_physical_score': current_data['overall_physical_score']
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error updating physical analysis: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def interview_results(request):
+
     if request.user.profile.role != 'STUDENT':
         return redirect('dashboard')
-    
-    # Mock summary for now (in a real app, this would be gathered from session['responses'])
-    session_summary = "Candidate answered questions about Python, databases, and problem solving with good clarity."
-    
-    # Call Ollama for Recommendation
-    score, recommendation = generate_interview_recommendation(
-        "Software Engineer",
-        session_summary
-    )
-    
-    # Create the interview result
-    interview = Interview.objects.create(
-        student=request.user,
-        role_type="Software Engineer",
-        score=score,
-        ai_recommendation=recommendation
-    )
-    
-    return render(request, 'core/interview_results.html', {'interview': interview})
+        
+    interview_id = request.session.get('interview_id')
+    if not interview_id:
+        return redirect('dashboard')
+        
+    try:
+        interview = Interview.objects.get(id=interview_id)
+    except Interview.DoesNotExist:
+        return redirect('dashboard')
+        
+    responses = request.session.get('responses', [])
+            
+    return render(request, 'core/results.html', {
+        'interview': interview,
+        'responses': responses
+    })
 
 from .forms import ProfileForm
 

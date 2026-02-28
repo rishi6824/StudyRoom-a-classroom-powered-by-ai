@@ -1,0 +1,93 @@
+{
+    "candidate_name": "Abhay Jadhav",
+    "interview_id": "mock_id_006",
+    "job_role": "data_scientist",
+    "total_score": 44.0,
+    "percentage": 88.0,
+    "max_possible": 50,
+    "total_questions": 5,
+    "responses": [
+        {
+            "question_index": 0,
+            "question": "What is the bias-variance tradeoff in machine learning?",
+            "answer": "Bias refers to error from overly simplistic assumptions in the model. Variance refers to error from excessive sensitivity to small fluctuations in the training set. The tradeoff involves finding the sweet spot where both errors are minimized for better generalization.",
+            "feedback": "Outstanding explanation with clear conceptual depth.",
+            "score": 9.5,
+            "physical_analysis": {
+                "confidence": 9.0,
+                "voice_quality": 8.8,
+                "body_language": 8.5,
+                "overall_physical_score": 8.8,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 1,
+            "question": "Explain how a Random Forest algorithm works.",
+            "answer": "Random Forest is an ensemble learning method that constructs multiple decision trees during training and outputs the class that is the mode of the classes or mean prediction of the individual trees by using bagging and feature randomness.",
+            "feedback": "Correct. You've captured the essence of ensemble learning and bagging.",
+            "score": 8.8,
+            "physical_analysis": {
+                "confidence": 8.8,
+                "voice_quality": 8.5,
+                "body_language": 8.2,
+                "overall_physical_score": 8.6,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 2,
+            "question": "What is the difference between L1 and L2 regularization?",
+            "answer": "L1 regularization (Lasso) adds the absolute value of coefficients as a penalty term, which can lead to sparse models by zeroing out features. L2 (Ridge) adds the squared magnitude, which penalizes large weights but doesn't necessarily zero them out.",
+            "feedback": "Solid technical comparison. Good mention of feature selection in L1.",
+            "score": 9.0,
+            "physical_analysis": {
+                "confidence": 8.5,
+                "voice_quality": 8.2,
+                "body_language": 8.8,
+                "overall_physical_score": 8.4,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 3,
+            "question": "How do you handle imbalanced datasets in classification?",
+            "answer": "I use techniques like SMOTE for oversampling the minority class, undersampling the majority class, or using algorithms that handle class weights. I also focus on precision-recall rather than just accuracy.",
+            "feedback": "Very practical answer. Good focus on evaluation metrics beyond accuracy.",
+            "score": 8.5,
+            "physical_analysis": {
+                "confidence": 8.2,
+                "voice_quality": 8.5,
+                "body_language": 8.0,
+                "overall_physical_score": 8.2,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 4,
+            "question": "Explain the concept of PCA (Principal Component Analysis).",
+            "answer": "PCA is a dimensionality reduction technique that transforms a large set of variables into a smaller one that still contains most of the information by focusing on dimensions with the highest variance.",
+            "feedback": "Excellent high-level summary of a complex statistical technique.",
+            "score": 8.2,
+            "physical_analysis": {
+                "confidence": 8.0,
+                "voice_quality": 8.8,
+                "body_language": 8.5,
+                "overall_physical_score": 8.4,
+                "violations": []
+            }
+        }
+    ],
+    "physical_summary": {
+        "avg_confidence": 8.9,
+        "avg_voice": 8.65,
+        "avg_posture": 8.35,
+        "emotion_profile": {
+            "Neutral": 85,
+            "Serious": 10,
+            "Happy": 5
+        }
+    },
+    "start_time": "2026-02-19T15:00:00.000000",
+    "end_time": "2026-02-19T15:15:00.000000"
+}

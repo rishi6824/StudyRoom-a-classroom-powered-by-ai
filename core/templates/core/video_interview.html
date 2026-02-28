@@ -1,0 +1,52 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Video Interview Setup{% endblock %}
+
+{% block content %}
+<div class="video-interview-setup">
+    <div class="container">
+        <h2>Video Interview Setup</h2>
+        
+        <div class="setup-instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Make sure you have a working webcam and microphone</li>
+                <li>Find a quiet, well-lit environment</li>
+                <li>Ensure you have a stable internet connection</li>
+                <li>You'll have 3 minutes to answer each question</li>
+                {% if enable_voice %}
+                <li>Voice input is enabled - you can speak your answers</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="camera-test">
+            <h3>Camera Test</h3>
+            <div class="video-container">
+                <video id="previewVideo" autoplay muted playsinline></video>
+            </div>
+            <button id="startCamera" class="btn btn-primary">Start Camera</button>
+        </div>
+
+        <div class="start-interview-section">
+            <a href="{% url 'interview_room' %}" class="btn btn-primary btn-large">Start Interview</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('startCamera').addEventListener('click', async function() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: true 
+        });
+        document.getElementById('previewVideo').srcObject = stream;
+        this.textContent = 'Camera Active';
+        this.disabled = true;
+    } catch (error) {
+        alert('Error accessing camera: ' + error.message);
+    }
+});
+</script>
+{% endblock %}

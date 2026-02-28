@@ -1,0 +1,181 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Admin Login - Rishi AI{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card glass-panel">
+        <div class="login-header">
+            <div class="login-icon">🔐</div>
+            <h1>Recruiter Access</h1>
+            <p>Elevate your hiring with AI insights</p>
+        </div>
+
+        {% if error %}
+        <div class="error-alert">
+            <span class="error-icon">⚠️</span>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="login-form">
+            <div class="form-group">
+                <label for="password">Admin Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter recruitment key..." required
+                    autofocus>
+            </div>
+
+            <button type="submit" class="btn btn-primary login-btn">
+                <span>Unlock Dashboard</span>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <a href="{% url 'index' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Return Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 400px;
+        padding: 40px;
+        border-radius: 24px;
+        text-align: center;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 0 10px rgba(0, 201, 255, 0.5));
+    }
+
+    .login-header h1 {
+        font-size: 1.8rem;
+        color: #fff;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .login-header p {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 30px;
+    }
+
+    .error-alert {
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        color: #ff4757;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 14px 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #00c9ff;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 4px rgba(0, 201, 255, 0.1);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+        border: none;
+        color: #000;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 201, 255, 0.3);
+    }
+
+    .login-footer {
+        margin-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 20px;
+    }
+
+    .back-link {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: #fff;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

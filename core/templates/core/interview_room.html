@@ -983,90 +983,85 @@
             if (vFrame) formData.append('video_frame', vFrame);
             if (aSegment) formData.append('audio_segment', aSegment);
 
-            // Get Django CSRF token
-            const csrftoken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-            if (csrftoken) {
-                formData.append('csrfmiddlewaretoken', csrftoken);
-            }
-
-            const resp = await fetch('/api/update_physical_analysis/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrftoken
+            try {
+                // Get Django CSRF token
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                if (csrftoken) {
+                    formData.append('csrfmiddlewaretoken', csrftoken);
                 }
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data.success) this.updateUI(data.current_analysis);
-            }
-        } catch(e) { console.error("Analysis sync error:", e); }
-    }
 
-    updateUI(currentAnalysis) {
-        const update = (id, barId, val) => {
-            const el = document.getElementById(id);
-            const bar = document.getElementById(barId);
-            if (el) el.innerText = `${val.toFixed(1)}/10`;
-            if (bar) bar.style.width = `${(val / 10) * 100}%`;
-
-            if (el) {
-                el.classList.remove('score-high', 'score-medium', 'score-low');
-                if (val >= 7) el.classList.add('score-high');
-                else if (val >= 5) el.classList.add('score-medium');
-                else el.classList.add('score-low');
-            }
-        };
-
-        update('confidenceValue', 'confidenceBar', currentAnalysis.confidence);
-        update('voiceValue', 'voiceBar', currentAnalysis.voice_quality);
-        update('bodyLanguageValue', 'bodyLanguageBar', currentAnalysis.body_language);
-
-        const overall = document.getElementById('physicalScoreValue');
-        if (overall) overall.innerText = `${currentAnalysis.overall_physical_score.toFixed(1)}/10`;
-
-        // Update Real-time Emotion
-        const emotionVal = document.getElementById('emotionVal');
-        if (emotionVal) emotionVal.innerText = currentAnalysis.latest_emotion || "Neutral";
-
-        // Update Physical Status
-        const statusVal = document.getElementById('statusVal');
-        const physicalStatusBadge = document.getElementById('physicalStatus');
-        if (statusVal && physicalStatusBadge) {
-            let status = "Face Detected";
-            physicalStatusBadge.classList.remove('warning', 'danger');
-
-            if (currentAnalysis.phone_detected) {
-                status = "Phone Detected!";
-                physicalStatusBadge.classList.add('danger');
-            } else if (currentAnalysis.person_count > 1) {
-                status = "Multi-Person!";
-                physicalStatusBadge.classList.add('warning');
-            } else if (currentAnalysis.person_count === 0) {
-                status = "No Face Detected";
-                physicalStatusBadge.classList.add('warning');
-            }
-            statusVal.innerText = status;
+                const resp = await fetch('/api/update_physical_analysis/', { method: 'POST', body: formData });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.success) this.updateUI(data.current_analysis);
+                }
+            } catch (e) { console.error("Analysis sync error:", e); }
         }
 
-        // Update security alerts
-        const alertBox = document.getElementById('securityAlerts');
-        const violationsList = document.getElementById('violationsList');
-        if (alertBox && violationsList) {
-            if (currentAnalysis.violations && currentAnalysis.violations.length > 0) {
-                violationsList.innerHTML = '';
-                currentAnalysis.violations.forEach(v => {
-                    const li = document.createElement('li');
-                    li.innerText = v;
-                    violationsList.appendChild(li);
-                });
-                alertBox.style.display = 'block';
-            } else {
-                alertBox.style.display = 'none';
+        updateUI(data) {
+            const currentAnalysis = data.current_analysis;
+            const update = (id, barId, val) => {
+                const el = document.getElementById(id);
+                const bar = document.getElementById(barId);
+                if (el) el.innerText = `${val.toFixed(1)}/10`;
+                if (bar) bar.style.width = `${(val / 10) * 100}%`;
+
+                if (el) {
+                    el.classList.remove('score-high', 'score-medium', 'score-low');
+                    if (val >= 7) el.classList.add('score-high');
+                    else if (val >= 5) el.classList.add('score-medium');
+                    else el.classList.add('score-low');
+                }
+            };
+
+            update('confidenceValue', 'confidenceBar', currentAnalysis.confidence);
+            update('voiceValue', 'voiceBar', currentAnalysis.voice_quality);
+            update('bodyLanguageValue', 'bodyLanguageBar', currentAnalysis.body_language);
+
+            const overall = document.getElementById('physicalScoreValue');
+            if (overall) overall.innerText = `${currentAnalysis.overall_physical_score.toFixed(1)}/10`;
+
+            // Update Real-time Emotion
+            const emotionVal = document.getElementById('emotionVal');
+            if (emotionVal) emotionVal.innerText = data.latest_emotion || "Neutral";
+
+            // Update Physical Status
+            const statusVal = document.getElementById('statusVal');
+            const physicalStatusBadge = document.getElementById('physicalStatus');
+            if (statusVal && physicalStatusBadge) {
+                let status = "Face Detected";
+                physicalStatusBadge.classList.remove('warning', 'danger');
+
+                if (data.phone_detected) {
+                    status = "Phone Detected!";
+                    physicalStatusBadge.classList.add('danger');
+                } else if (data.person_count > 1) {
+                    status = "Multi-Person!";
+                    physicalStatusBadge.classList.add('warning');
+                } else if (data.person_count === 0) {
+                    status = "No Face Detected";
+                    physicalStatusBadge.classList.add('warning');
+                }
+                statusVal.innerText = status;
+            }
+
+            // Update security alerts
+            const alertBox = document.getElementById('securityAlerts');
+            const violationsList = document.getElementById('violationsList');
+            if (alertBox && violationsList) {
+                if (currentAnalysis.violations && currentAnalysis.violations.length > 0) {
+                    violationsList.innerHTML = '';
+                    currentAnalysis.violations.forEach(v => {
+                        const li = document.createElement('li');
+                        li.innerText = v;
+                        violationsList.appendChild(li);
+                    });
+                    alertBox.style.display = 'block';
+                } else {
+                    alertBox.style.display = 'none';
+                }
             }
         }
-    }
     }
 
     // Simplified Logic
@@ -1171,8 +1166,7 @@
 
             try {
                 const formData = new FormData(answerForm);
-                const csrftoken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                    || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
                 if (csrftoken) {
                     formData.append('csrfmiddlewaretoken', csrftoken);
                 }
@@ -1197,7 +1191,7 @@
                     document.getElementById('thankYouOverlay').style.display = 'flex';
 
                     setTimeout(() => {
-                        window.location.href = "{% url 'interview_results' %}";
+                        window.location.href = '/results';
                     }, 3000);
                 } else {
                     location.reload(); // Simple next question strategy
@@ -1253,7 +1247,7 @@
                 if (window.answerTimerInterval) clearInterval(window.answerTimerInterval);
 
                 // Redirect to cancellation page
-                window.location.href = "{% url 'dashboard' %}";
+                window.location.href = '/cancel_interview';
             }
         });
     });

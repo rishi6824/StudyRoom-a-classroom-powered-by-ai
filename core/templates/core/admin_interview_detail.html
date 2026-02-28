@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Details - {{ interview.candidate_name }}{% endblock %}
+
+{% block content %}
+<div class="interview-detail-container">
+    <div class="container">
+        <div class="detail-header">
+            <a href="{% url 'admin' %}" class="btn btn-secondary">← Back to Admin</a>
+            <h1>Interview Details: {{ interview.candidate_name }}</h1>
+            <div class="interview-meta">
+                <div class="meta-item">
+                    <strong>ID:</strong> {{ interview.id }}
+                </div>
+                <div class="meta-item">
+                    <strong>Job Role:</strong> {{ interview.job_role }}
+                </div>
+                <div class="meta-item">
+                    <strong>Status:</strong>
+                    <span class="status-badge status-{{ interview.status }}">
+                        {{ interview.status|title }}
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <strong>Start Time:</strong> {{ interview.start_time|slice:":19" }}
+                </div>
+                <div class="meta-item">
+                    <strong>End Time:</strong> {{ interview.end_time|slice:":19" }}
+                </div>
+                <div class="meta-item">
+                    <strong>Overall Score:</strong>
+                    {% if interview.overall_score %}
+                    <span class="score-display">{{ interview.overall_score|floatformat:1 }}/10</span>
+                    {% else %}
+                    Not completed
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if interview.physical_summary %}
+        <div class="overall-behavioral-section">
+            <h2>🧠 Overall Behavioral & Physical Summary</h2>
+            <div class="behavioral-grid">
+                <div class="behavior-stat">
+                    <strong>Avg Confidence:</strong>
+                    <span>{{ interview.physical_summary.avg_confidence }}/10</span>
+                </div>
+                <div class="behavior-stat">
+                    <strong>Avg Voice Clarity:</strong>
+                    <span>{{ interview.physical_summary.avg_voice }}/10</span>
+                </div>
+                <div class="behavior-stat">
+                    <strong>Avg Body Language:</strong>
+                    <span>{{ interview.physical_summary.avg_posture }}/10</span>
+                </div>
+            </div>
+
+            {% if interview.physical_summary.emotion_profile %}
+            <div class="admin-emotion-profile">
+                <h4>🎭 Emotion Profile breakdown</h4>
+                <div class="emotion-bars">
+                    {% for emotion, score in interview.physical_summary.emotion_profile.items %}
+                    <div class="emotion-row">
+                        <span class="emo-label">{{ emotion }}</span>
+                        <div class="emo-bar-bg">
+                            <div class="emo-bar-fill" style="--width: {{ score }}%"></div>
+                        </div>
+                        <span class="emo-val">{{ score }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if responses %}
+        <div class="responses-section">
+            <h2>Question Responses</h2>
+            <div class="responses-list">
+                {% for response in responses %}
+                <div class="response-card">
+                    <div class="question-header">
+                        <h3>Question {{ forloop.counter }}</h3>
+                        <div class="question-score">
+                            Score: <span class="score-value">{{ "%.1f"|format(response.score) }}/10</span>
+                        </div>
+                    </div>
+                    <div class="question-text">
+                        <strong>{{ response.question }}</strong>
+                    </div>
+                    <div class="answer-section">
+                        <h4>Candidate's Answer:</h4>
+                        <div class="answer-text">{{ response.answer }}</div>
+                    </div>
+                    <div class="feedback-section">
+                        <h4>AI Feedback:</h4>
+                        <div class="feedback-text">{{ response.feedback }}</div>
+                    </div>
+
+                    {% if response.physical_analysis %}
+                    <div class="physical-section">
+                        <h4>Physical Analysis & Security:</h4>
+                        <div class="physical-details">
+                            <div class="analysis-item">
+                                <strong>Confidence:</strong> {{ response.physical_analysis.confidence }}/10
+                            </div>
+                            <div class="analysis-item">
+                                <strong>Voice Quality:</strong> {{ response.physical_analysis.voice_quality }}/10
+                            </div>
+                            <div class="analysis-item">
+                                <strong>Body Language:</strong> {{ response.physical_analysis.body_language }}/10
+                            </div>
+                            {% if response.physical_analysis.violations %}
+                            <div class="violation-badge">
+                                <strong>⚠️ Security Violations:</strong>
+                                <ul>
+                                    {% for violation in response.physical_analysis.violations %}
+                                    <li>{{ violation }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if response.detailed_analysis %}
+                    <div class="analysis-section">
+                        <h4>Detailed Analysis:</h4>
+                        <div class="analysis-details">
+                            {% for key, value in response.detailed_analysis.items %}
+                            {% if key not in ['physical_analysis', 'confidence_score', 'voice_quality', 'body_language']
+                            %}
+                            <div class="analysis-item">
+                                <strong>{{ key|title }}:</strong> {{ value }}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>No responses recorded yet for this interview.</p>
+        </div>
+        {% endif %}
+
+        {% if resume_analysis %}
+        <div class="resume-section">
+            <h2>Resume Analysis</h2>
+            <div class="resume-analysis">
+                {% for key, value in resume_analysis.items %}
+                <div class="analysis-item">
+                    <strong>{{ key|title }}:</strong>
+                    {% if value is iterable and value is not string %}
+                    <ul>
+                        {% for item in value %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    {{ value }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .interview-detail-container {
+        padding: 2rem 0;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .detail-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-header h1 {
+        color: #333;
+        margin: 1rem 0;
+        text-align: center;
+    }
+
+    .interview-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .meta-item {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .meta-item strong {
+        display: block;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-in_progress {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .score-display {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .responses-section,
+    .overall-behavioral-section,
+    .resume-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .responses-section h2,
+    .overall-behavioral-section h2,
+    .resume-section h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 0.5rem;
+    }
+
+    .behavioral-grid {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .behavior-stat {
+        background: #fdfbff;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0ff;
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+
+    .behavior-stat strong {
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .behavior-stat span {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .admin-emotion-profile h4 {
+        margin-bottom: 1rem;
+        color: #4a4a8a;
+    }
+
+    .emotion-row {
+        display: grid;
+        grid-template-columns: 120px 1fr 60px;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 10px;
+    }
+
+    .emo-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .emo-bar-bg {
+        height: 6px;
+        background: #f0f0f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .emo-bar-fill {
+        height: 100%;
+        background: #667eea;
+        width: var(--width, 0%);
+    }
+
+    .emo-val {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #667eea;
+        text-align: right;
+    }
+
+    .response-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        background: #fafafa;
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .question-header h3 {
+        color: #333;
+        margin: 0;
+    }
+
+    .question-score {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .score-value {
+        color: #667eea;
+    }
+
+    .question-text {
+        background: white;
+        padding: 1rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .answer-section,
+    .feedback-section,
+    .analysis-section {
+        margin-bottom: 1rem;
+    }
+
+    .answer-section h4,
+    .feedback-section h4,
+    .analysis-section h4 {
+        color: #555;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .answer-text,
+    .feedback-text {
+        background: white;
+        padding: 1rem;
+        border-radius: 5px;
+        line-height: 1.6;
+    }
+
+    .analysis-details {
+        background: white;
+        padding: 1rem;
+        border-radius: 5px;
+    }
+
+    .analysis-item {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 3px;
+    }
+
+    .analysis-item strong {
+        color: #667eea;
+    }
+
+    .resume-analysis {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 5px;
+    }
+
+    .resume-analysis .analysis-item {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-left: 3px solid #667eea;
+    }
+
+    .physical-section {
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: #fff5f5;
+        border-radius: 8px;
+        border: 1px solid #feb2b2;
+    }
+
+    .physical-section h4 {
+        color: #c53030;
+        margin-bottom: 1rem;
+    }
+
+    .violation-badge {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #fff5f5;
+        border: 1px dashed #fc8181;
+        border-radius: 5px;
+    }
+
+    .violation-badge strong {
+        color: #e53e3e;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .violation-badge ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: #c53030;
+    }
+
+    .violation-badge li {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

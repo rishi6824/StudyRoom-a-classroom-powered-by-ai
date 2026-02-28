@@ -1,0 +1,306 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Resume Analyzer - AI Insight{% endblock %}
+
+{% block content %}
+<div class="resume-container">
+    <div class="resume-header">
+        <h1>Resume Intelligence</h1>
+        <p>AI-powered insights for your professional profile</p>
+    </div>
+
+    <div class="upload-card">
+        <form action="{% url 'analyze_resume' %}" method="POST" enctype="multipart/form-data" class="upload-form">
+            <div class="file-input-wrapper">
+                <div class="upload-icon">📄</div>
+                <input type="file" id="resume" name="resume" accept=".pdf,.docx,.txt" required>
+                <label for="resume">Drop your resume here or click to browse</label>
+                <p class="file-hint">PDF, DOCX, or TXT supported</p>
+            </div>
+            <button type="submit" class="btn btn-primary submit-btn">Analyze My Resume</button>
+        </form>
+    </div>
+
+    {% if analysis %}
+    <div class="analysis-grid">
+        <!-- Score Card -->
+        <div class="glass-card score-card">
+            <h3>Profile Strength</h3>
+            <div class="overall-gauge">
+                <div class="gauge-value">{{ analysis.scores.overall_score|floatformat:1 }}</div>
+                <div class="gauge-label">Score / 10</div>
+            </div>
+            <div class="score-breakdown">
+                <div class="breakdown-item">
+                    <span class="label">Skills</span>
+                    <div class="progress-bg">
+                        <div class="progress-fill"
+                            style="width:{{ analysis.scores.skills_score|default:0|floatformat:0 }}0%;">
+                        </div>
+                    </div>
+                    <span class="value">{{ analysis.scores.skills_score|floatformat:1 }}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="label">Experience</span>
+                    <div class="progress-bg">
+                        <div class="progress-fill"
+                            style="width:{{ analysis.scores.experience_score|default:0|floatformat:0 }}0%;">
+                        </div>
+                    </div>
+                    <span class="value">{{ analysis.scores.experience_score|floatformat:1 }}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="label">Education</span>
+                    <div class="progress-bg">
+                        <div class="progress-fill"
+                            style="width:{{ analysis.scores.education_score|default:0|floatformat:0 }}0%;">
+                        </div>
+                    </div>
+                    <span class="value">{{ analysis.scores.education_score|floatformat:1 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Cloud -->
+        <div class="glass-card skills-card">
+            <h3>Detected Skills</h3>
+            <div class="skills-categories">
+                {% for category, skills in analysis.skills.items %}
+                <div class="category-group">
+                    <h4>{{ category|title }}</h4>
+                    <div class="tag-container">
+                        {% for skill in skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="glass-card rec-card">
+            <h3>Professional Recommendations</h3>
+            <ul class="rec-list">
+                {% for recommendation in analysis.recommendations %}
+                <li>
+                    <span class="rec-icon">💡</span>
+                    {{ recommendation }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .resume-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .resume-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .resume-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #fff;
+    }
+
+    .resume-header p {
+        color: #b2bec3;
+        font-size: 1.1rem;
+    }
+
+    .upload-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 40px;
+        text-align: center;
+        transition: transform 0.3s;
+    }
+
+    .upload-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .file-input-wrapper {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 25px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .file-input-wrapper input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .file-hint {
+        color: #777;
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+
+    .analysis-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+    }
+
+    .score-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .overall-gauge {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        border: 8px solid rgba(102, 126, 234, 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    }
+
+    .gauge-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .gauge-label {
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    .score-breakdown {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .breakdown-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .breakdown-item .label {
+        width: 90px;
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+    .progress-bg {
+        flex: 1;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+    }
+
+    .skill-tag {
+        background: rgba(102, 126, 234, 0.15);
+        color: #a5b4fc;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        display: inline-block;
+        margin: 4px;
+    }
+
+    .rec-card {
+        grid-column: span 2;
+    }
+
+    .rec-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .rec-list li {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #eee;
+    }
+
+    .rec-icon {
+        font-size: 1.2rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .analysis-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rec-card {
+            grid-column: span 1;
+        }
+    }
+</style>
+{% endblock %}

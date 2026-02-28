@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Interview Platform{% endblock %}</title>
+    <link rel="icon" href="{% static 'core/favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=2.1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        /* Critical CSS - removed !important to allow dynamic visibility control */
+        .interview-room {
+            display: block;
+        }
+
+        .video-section {
+            display: block;
+        }
+
+        .question-section {
+            display: block;
+        }
+
+        .interview-header {
+            display: flex;
+        }
+
+        .timer {
+            display: inline-block;
+        }
+
+        .btn {
+            display: inline-block;
+        }
+
+        .question-card {
+            display: block;
+        }
+
+        .answer-section {
+            display: none;
+            /* Default to hidden, show when needed */
+        }
+    </style>
+</head>
+
+<body class="{% block body_class %}{% endblock %}" style="background: #000033;">
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer" style="background: #000044; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="footer-content">
+            <!-- Copyright removed as requested -->
+        </div>
+    </footer>
+
+    <script src="{% static 'core/js/script.js' %}"></script>
+</body>
+
+</html>

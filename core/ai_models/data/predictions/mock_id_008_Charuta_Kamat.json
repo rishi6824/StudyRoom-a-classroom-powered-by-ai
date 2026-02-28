@@ -1,0 +1,92 @@
+{
+    "candidate_name": "Charuta Kamat",
+    "interview_id": "mock_id_008",
+    "job_role": "qa_engineer",
+    "total_score": 38.0,
+    "percentage": 76.0,
+    "max_possible": 50,
+    "total_questions": 5,
+    "responses": [
+        {
+            "question_index": 0,
+            "question": "What is regression testing?",
+            "answer": "Regression testing is re-running functional and non-functional tests to ensure that previously developed and tested software still performs after a change.",
+            "feedback": "Perfect definition. Your focus on software stability is excellent.",
+            "score": 8.0,
+            "physical_analysis": {
+                "confidence": 7.5,
+                "voice_quality": 8.0,
+                "body_language": 7.8,
+                "overall_physical_score": 7.7,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 1,
+            "question": "Differentiate between Alpha and Beta testing.",
+            "answer": "Alpha testing is performed by internal staff at the developer site. Beta testing is performed by actual users in their environment.",
+            "feedback": "Clear and accurate distinction between the two testing phases.",
+            "score": 7.5,
+            "physical_analysis": {
+                "confidence": 7.8,
+                "voice_quality": 7.5,
+                "body_language": 7.5,
+                "overall_physical_score": 7.6,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 2,
+            "question": "What is the Bug Life Cycle?",
+            "answer": "It starts from New, then Open, Fixed, Retest, and finally Closed. There can also be stages like Deferred or Rejected.",
+            "feedback": "Good understanding of the standard defect workflow.",
+            "score": 8.0,
+            "physical_analysis": {
+                "confidence": 8.0,
+                "voice_quality": 7.8,
+                "body_language": 8.0,
+                "overall_physical_score": 7.9,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 3,
+            "question": "How do you perform Load Testing?",
+            "answer": "Load testing is done by simulating multiple users accessing the application simultaneously to check system performance under expected load.",
+            "feedback": "Core concept is correct. Mentioning specific tools like JMeter would be even better.",
+            "score": 7.0,
+            "physical_analysis": {
+                "confidence": 7.2,
+                "voice_quality": 7.8,
+                "body_language": 7.4,
+                "overall_physical_score": 7.5,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 4,
+            "question": "What is the importance of Test Data?",
+            "answer": "Test data is vital for executing test cases. It should cover all positive and negative scenarios to ensure comprehensive testing.",
+            "feedback": "Excellent point. Data coverage is essential for quality assurance.",
+            "score": 7.5,
+            "physical_analysis": {
+                "confidence": 7.5,
+                "voice_quality": 8.0,
+                "body_language": 7.8,
+                "overall_physical_score": 7.7,
+                "violations": []
+            }
+        }
+    ],
+    "physical_summary": {
+        "avg_confidence": 7.6,
+        "avg_voice": 7.8,
+        "avg_posture": 7.7,
+        "emotion_profile": {
+            "Neutral": 95,
+            "Serious": 5
+        }
+    },
+    "start_time": "2026-02-19T16:00:00.000000",
+    "end_time": "2026-02-19T16:15:00.000000"
+}

@@ -1,0 +1,86 @@
+{
+  "software_engineer": [
+    {"question": "Explain object-oriented programming and its main principles.", "type": "technical", "keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction", "classes", "objects"], "difficulty": "medium"},
+    {"question": "Describe a challenging technical problem you solved and how you approached it.", "type": "behavioral", "keywords": ["problem", "solution", "approach", "challenge", "result", "learning"], "difficulty": "medium"},
+    {"question": "How do you ensure code quality and what testing methodologies do you use?", "type": "technical", "keywords": ["testing", "quality", "unit tests", "integration", "code review", "best practices"], "difficulty": "medium"},
+    {"question": "How do you design scalable systems? Walk me through a recent example.", "type": "technical", "keywords": ["scalability", "distributed", "load", "sharding", "caching"], "difficulty": "hard"},
+    {"question": "How do you handle merge conflicts and code reviews in a team?", "type": "behavioral", "keywords": ["code review", "git", "teamwork", "process"], "difficulty": "medium"},
+    {"question": "Explain the trade-offs between SQL and NoSQL databases.", "type": "technical", "keywords": ["sql", "nosql", "schema", "consistency", "scalability"], "difficulty": "medium"},
+    {"question": "Describe a time you optimized performance in a real system.", "type": "behavioral", "keywords": ["performance", "profiling", "optimisation", "latency"], "difficulty": "medium"},
+    {"question": "What design patterns have you used and why?", "type": "technical", "keywords": ["singleton", "factory", "repository", "strategy"], "difficulty": "medium"},
+    {"question": "How do you approach debugging a difficult production issue?", "type": "technical", "keywords": ["debugging", "root cause", "monitoring", "logs"], "difficulty": "medium"},
+    {"question": "What steps do you take to stay current with new technologies?", "type": "behavioral", "keywords": ["learning", "conferences", "reading", "projects"], "difficulty": "easy"},
+    {"question": "Explain dependency injection and its benefits.", "type": "technical", "keywords": ["dependency injection", "inversion of control", "testing"], "difficulty": "medium"},
+    {"question": "How would you design a URL shortener service?", "type": "technical", "keywords": ["design", "scalability", "database", "hashing"], "difficulty": "hard"}
+  ],
+  "frontend_engineer": [
+    {"question": "Explain the box model in CSS and how to fix layout issues.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you optimize frontend performance for slow networks?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe your process for ensuring cross-browser compatibility.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you manage state in complex front-end applications?", "type": "technical", "difficulty": "medium"},
+    {"question": "Explain accessibility considerations and testing approaches.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you approach responsive design?", "type": "technical", "difficulty": "easy"},
+    {"question": "Tell me about a UI you improved based on user feedback.", "type": "behavioral", "difficulty": "easy"},
+    {"question": "When would you use a virtual DOM and why?", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you test frontend components?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a challenging layout you implemented and how you solved it.", "type": "behavioral", "difficulty": "medium"}
+  ],
+  "backend_engineer": [
+    {"question": "Explain RESTful principles and when you might choose GraphQL instead.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you design APIs to be versionable and backward compatible?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a caching strategy you implemented and the trade-offs.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you handle database migrations in production?", "type": "technical", "difficulty": "medium"},
+    {"question": "Tell me about a time you improved system reliability.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "Explain idempotency and why it matters in distributed systems.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you secure APIs and manage authentication/authorization?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe monitoring and alerting techniques you use.", "type": "technical", "difficulty": "easy"},
+    {"question": "How would you handle schema design for multi-tenant systems?", "type": "technical", "difficulty": "hard"},
+    {"question": "What is CQRS and when would you use it?", "type": "technical", "difficulty": "hard"}
+  ],
+  "devops_engineer": [
+    {"question": "Explain CI/CD pipelines and key best practices.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you manage infrastructure as code?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a time you restored a service after an outage.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you monitor system health and set effective alerts?", "type": "technical", "difficulty": "medium"},
+    {"question": "Explain blue/green and canary deployments.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you handle secrets management?", "type": "technical", "difficulty": "medium"},
+    {"question": "What metrics do you track for performance tuning?", "type": "technical", "difficulty": "easy"},
+    {"question": "Tell me about a time you automated a manual process.", "type": "behavioral", "difficulty": "easy"}
+  ],
+  "data_scientist": [
+    {"question": "Explain supervised vs unsupervised learning.", "type": "technical", "difficulty": "easy"},
+    {"question": "How do you handle missing data and feature selection?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a model you deployed and the challenges faced.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you evaluate model performance and avoid overfitting?", "type": "technical", "difficulty": "medium"},
+    {"question": "Explain bias and fairness considerations in models.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you communicate model results to non-technical stakeholders?", "type": "behavioral", "difficulty": "easy"}
+  ],
+  "qa_engineer": [
+    {"question": "How do you design test cases for an API?", "type": "technical", "difficulty": "medium"},
+    {"question": "Explain the differences between unit, integration, and end-to-end tests.", "type": "technical", "difficulty": "easy"},
+    {"question": "Describe a time you found a critical bug and how you handled it.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you prioritize tests for tight release cycles?", "type": "technical", "difficulty": "medium"},
+    {"question": "What tools do you use for automated testing?", "type": "technical", "difficulty": "easy"}
+  ],
+  "embedded_engineer": [
+    {"question": "Explain memory management constraints in embedded systems.", "type": "technical", "difficulty": "medium"},
+    {"question": "How do you debug hardware-related software issues?", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a project where you optimized for low-power operation.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "What is interrupt-driven programming and where is it used?", "type": "technical", "difficulty": "medium"}
+  ],
+  "electrical_engineer": [
+    {"question": "Explain Ohm's law and how you apply it in design.", "type": "technical", "difficulty": "easy"},
+    {"question": "Describe a PCB design challenge you've faced.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you select components to meet power constraints?", "type": "technical", "difficulty": "medium"}
+  ],
+  "mechanical_engineer": [
+    {"question": "Explain the process you follow for mechanical design validation.", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a time you improved manufacturability of a design.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you use simulation tools in your workflow?", "type": "technical", "difficulty": "medium"}
+  ],
+  "civil_engineer": [
+    {"question": "Explain how you assess load-bearing capacity in a structure.", "type": "technical", "difficulty": "medium"},
+    {"question": "Describe a project where you managed budget or timeline constraints.", "type": "behavioral", "difficulty": "medium"},
+    {"question": "How do you ensure compliance with local building codes?", "type": "technical", "difficulty": "easy"}
+  ]
+}

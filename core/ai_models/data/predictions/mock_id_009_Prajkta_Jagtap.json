@@ -1,0 +1,95 @@
+{
+    "candidate_name": "Prajkta Jagtap",
+    "interview_id": "mock_id_009",
+    "job_role": "ui_ux_designer",
+    "total_score": 32.5,
+    "percentage": 65.0,
+    "max_possible": 50,
+    "total_questions": 5,
+    "responses": [
+        {
+            "question_index": 0,
+            "question": "What are the principles of good design?",
+            "answer": "Consistency, balance, hierarchy, and usability. A good design should be intuitive and solve a user problem.",
+            "feedback": "Excellent perspective. Your design philosophy is very user-centric.",
+            "score": 7.0,
+            "physical_analysis": {
+                "confidence": 6.8,
+                "voice_quality": 7.2,
+                "body_language": 6.5,
+                "overall_physical_score": 6.8,
+                "violations": [
+                    "Multiple people detected (2)"
+                ]
+            }
+        },
+        {
+            "question_index": 1,
+            "question": "How do you handle negative feedback on your designs?",
+            "answer": "I view it as an opportunity to improve. I try to understand the user's pain point and iterate on the design to address it.",
+            "feedback": "Great attitude. Resilience is key in design roles.",
+            "score": 6.5,
+            "physical_analysis": {
+                "confidence": 6.5,
+                "voice_quality": 7.0,
+                "body_language": 6.2,
+                "overall_physical_score": 6.6,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 2,
+            "question": "Describe your process for conducting user research.",
+            "answer": "I start by defining the research goals, then choose the appropriate method like interviews or surveys, and finally synthesize the findings into actionable insights.",
+            "feedback": "Methodical approach to research. Good focus on actionable outcomes.",
+            "score": 6.0,
+            "physical_analysis": {
+                "confidence": 6.8,
+                "voice_quality": 7.2,
+                "body_language": 6.5,
+                "overall_physical_score": 6.8,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 3,
+            "question": "How do you ensure accessibility in your designs?",
+            "answer": "I follow WCAG guidelines, ensure high color contrast, and design for screen readers and keyboard navigation.",
+            "feedback": "Core accessibility principles are well covered. Good awareness.",
+            "score": 6.5,
+            "physical_analysis": {
+                "confidence": 7.0,
+                "voice_quality": 6.8,
+                "body_language": 6.2,
+                "overall_physical_score": 6.7,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 4,
+            "question": "What tools do you use for prototyping?",
+            "answer": "I use Figma for high-fidelity prototypes and sometimes paper prototyping for quick ideation.",
+            "feedback": "Standard toolset. Figma is the industry leader for a reason.",
+            "score": 6.5,
+            "physical_analysis": {
+                "confidence": 7.2,
+                "voice_quality": 7.5,
+                "body_language": 6.8,
+                "overall_physical_score": 7.2,
+                "violations": []
+            }
+        }
+    ],
+    "physical_summary": {
+        "avg_confidence": 6.9,
+        "avg_voice": 7.1,
+        "avg_posture": 6.4,
+        "emotion_profile": {
+            "Neutral": 80,
+            "Confused": 15,
+            "Happy": 5
+        }
+    },
+    "start_time": "2026-02-19T16:30:00.000000",
+    "end_time": "2026-02-19T16:45:00.000000"
+}

@@ -1,0 +1,139 @@
+{
+  "candidate_name": "rushi",
+  "interview_id": "4cf6b5db12601fdccf33b6bead4e8e4a",
+  "job_role": "software_engineer",
+  "total_score": 1.5000000000000002,
+  "percentage": 3.0000000000000004,
+  "max_possible": 50,
+  "total_questions": 5,
+  "responses": [
+    {
+      "answer": "[Skipped]",
+      "detailed_analysis": {
+        "basic_analysis": true,
+        "sentences": 1,
+        "word_count": 3
+      },
+      "feedback": "I see. Try to include concepts like: encapsulation, inheritance, polymorphism We'll practice more on this area.",
+      "question": "Explain object-oriented programming and its main principles.",
+      "question_index": 0,
+      "score": 0.1
+    },
+    {
+      "answer": "[Skipped]",
+      "detailed_analysis": {
+        "basic_analysis": true,
+        "sentences": 1,
+        "word_count": 3
+      },
+      "feedback": "I see. Try to include concepts like: problem, solution, approach We'll practice more on this area.",
+      "question": "Describe a challenging technical problem you solved and how you approached it.",
+      "question_index": 1,
+      "score": 0.1
+    },
+    {
+      "answer": "[Skipped]",
+      "detailed_analysis": {
+        "basic_analysis": true,
+        "body_language": 5.0,
+        "confidence_score": 5.0,
+        "physical_analysis": {
+          "body_language": 5.0,
+          "confidence": 5.0,
+          "details": {
+            "audio_segment_count": 0,
+            "confidence_scores": [
+              5.0
+            ],
+            "emotion_history": [],
+            "frame_count": 1,
+            "person_counts": [
+              1
+            ],
+            "phone_detections": [
+              false
+            ],
+            "posture_scores": [
+              5.0
+            ],
+            "voice_scores": []
+          },
+          "overall_physical_score": 3.5,
+          "person_count": 1,
+          "phone_detected": false,
+          "violations": [],
+          "voice_quality": 0.0
+        },
+        "sentences": 1,
+        "voice_quality": 0.0,
+        "word_count": 3
+      },
+      "feedback": "I see. Try to include concepts like: testing, quality, unit tests We'll practice more on this area.",
+      "physical_analysis": {
+        "body_language": 5.0,
+        "confidence": 5.0,
+        "details": {
+          "audio_segment_count": 0,
+          "confidence_scores": [
+            5.0
+          ],
+          "emotion_history": [],
+          "frame_count": 1,
+          "person_counts": [
+            1
+          ],
+          "phone_detections": [
+            false
+          ],
+          "posture_scores": [
+            5.0
+          ],
+          "voice_scores": []
+        },
+        "overall_physical_score": 3.5,
+        "person_count": 1,
+        "phone_detected": false,
+        "violations": [],
+        "voice_quality": 0.0
+      },
+      "question": "How do you ensure code quality and what testing methodologies do you use?",
+      "question_index": 2,
+      "score": 1.1
+    },
+    {
+      "answer": "[Skipped]",
+      "detailed_analysis": {
+        "basic_analysis": true,
+        "sentences": 1,
+        "word_count": 3
+      },
+      "feedback": "I see. Try to include concepts like: scalability, distributed, load We'll practice more on this area.",
+      "question": "How do you design scalable systems? Walk me through a recent example.",
+      "question_index": 3,
+      "score": 0.1
+    },
+    {
+      "answer": "[Skipped]",
+      "detailed_analysis": {
+        "basic_analysis": true,
+        "sentences": 1,
+        "word_count": 3
+      },
+      "feedback": "I see. Try to include concepts like: code review, git, teamwork We'll practice more on this area.",
+      "question": "How do you handle merge conflicts and code reviews in a team?",
+      "question_index": 4,
+      "score": 0.1
+    }
+  ],
+  "overall_feedback": "Overall, you demonstrated needs improvement performance in this interview with an average score of 0.3/10.",
+  "start_time": "2026-02-19T22:30:12.433629",
+  "end_time": "2026-02-19T22:30:58.898816",
+  "physical_summary": {
+    "avg_confidence": 5.0,
+    "avg_voice": 0.0,
+    "avg_posture": 5.0,
+    "violations_count": 0,
+    "unique_violations": [],
+    "emotion_profile": {}
+  }
+}

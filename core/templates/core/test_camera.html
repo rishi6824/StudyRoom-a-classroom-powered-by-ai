@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera & Microphone Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+        video { width: 400px; height: 300px; border: 2px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>Camera & Microphone Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Camera Test</h2>
+        <button onclick="testCamera()">Test Camera</button>
+        <div id="cameraStatus"></div>
+        <video id="testVideo" autoplay muted playsinline></video>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Microphone Test</h2>
+        <button onclick="testMicrophone()">Test Microphone</button>
+        <div id="microphoneStatus"></div>
+        <div id="voiceOutput"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Text-to-Speech Test</h2>
+        <button onclick="testTextToSpeech()">Test AI Voice</button>
+        <div id="ttsStatus"></div>
+    </div>
+
+    <script>
+        async function testCamera() {
+            const status = document.getElementById('cameraStatus');
+            const video = document.getElementById('testVideo');
+            
+            try {
+                status.innerHTML = '🔄 Requesting camera access...';
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                status.innerHTML = '<span class="success">✅ Camera working perfectly!</span>';
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Camera error: ${error.message}</span>`;
+            }
+        }
+
+        async function testMicrophone() {
+            const status = document.getElementById('microphoneStatus');
+            
+            try {
+                status.innerHTML = '🔄 Requesting microphone access...';
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                status.innerHTML = '<span class="success">✅ Microphone working perfectly!</span>';
+                
+                // Test voice recognition if supported
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    status.innerHTML += '<br><span class="success">✅ Speech recognition supported</span>';
+                } else {
+                    status.innerHTML += '<br><span class="error">❌ Speech recognition not supported</span>';
+                }
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ Microphone error: ${error.message}</span>`;
+            }
+        }
+
+        function testTextToSpeech() {
+            const status = document.getElementById('ttsStatus');
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Hello! This is a test of text to speech functionality.');
+                utterance.rate = 0.9;
+                speechSynthesis.speak(utterance);
+                status.innerHTML = '<span class="success">✅ Text-to-speech working!</span>';
+            } else {
+                status.innerHTML = '<span class="error">❌ Text-to-speech not supported</span>';
+            }
+        }
+    </script>
+</body>
+</html>

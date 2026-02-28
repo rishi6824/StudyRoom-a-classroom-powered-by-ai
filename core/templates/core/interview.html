@@ -1,0 +1,63 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Interview Session{% endblock %}
+
+{% block content %}
+<div class="interview-container">
+    <div class="container">
+        <div class="interview-header">
+            <h2>Interview Session</h2>
+            <div class="progress-info">
+                Question {{ question_num }} of {{ total_questions }}
+            </div>
+        </div>
+
+        <div class="question-card">
+            <h3>{{ question.question|e }}</h3>
+            <p class="question-type">{{ question.type|title }} Question</p>
+        </div>
+
+        <div class="answer-section">
+            <form id="answerForm">
+                <div class="form-group">
+                    <label for="answer">Your Answer:</label>
+                    <textarea id="answer" name="answer" rows="6" placeholder="Type your answer here..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Answer</button>
+            </form>
+        </div>
+
+        <div id="feedback" class="feedback-section" style="display: none;">
+            <h4>Feedback:</h4>
+            <div id="feedbackContent"></div>
+            <button id="nextQuestion" class="btn btn-secondary" style="display: none;">Next Question</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('answerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/submit_answer', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('feedbackContent').innerHTML = `
+            <p><strong>Score:</strong> ${data.score}/10</p>
+            <p><strong>Feedback:</strong> ${data.feedback}</p>
+        `;
+        document.getElementById('feedback').style.display = 'block';
+        document.getElementById('nextQuestion').style.display = 'block';
+    });
+});
+
+document.getElementById('nextQuestion').addEventListener('click', function() {
+    window.location.reload();
+});
+</script>
+{% endblock %}

@@ -123,100 +123,55 @@ def evaluate_assignment(assignment_title, assignment_description, submission_con
             return 5.0, response
 
 def generate_interview_recommendation(role_type, responses_summary):
-    """Generates an interview recommendation using Ollama."""
-    prompt = f"""
-    You are an AI career advisor. Based on a student's practice interview for the role of '{role_type}', provide a career recommendation and performance summary.
-    
-    Interview Summary:
-    {responses_summary}
-    
-    Please provide:
-    1. A score out of 10.
-    2. A career recommendation and suggested improvements.
-    
-    Format your response EXACTLY like this:
-    Score: [Number]
-    Recommendation: [Text]
-    """
-    
-    response = get_ai_response(prompt)
-    if not response:
-        return 0, "Recommendation failed due to AI engine error."
-    
+    """Generates an interview recommendation using AIInterviewer."""
     try:
-        score_line = [line for line in response.split('\n') if 'Score:' in line][0]
-        score = float(score_line.split(':')[1].strip().split('/')[0])
-        recommendation = response.split('Recommendation:')[1].strip()
-        return score, recommendation
-    except Exception:
-        return 5.0, response # Fallback
+        from .ai_models.ai_interviewer import AIInterviewer
+        interviewer = AIInterviewer()
+        
+        mock_responses = [{
+            'question': 'Please summarize your experience.',
+            'answer': responses_summary,
+            'score': 7.0
+        }]
+        
+        recommendation = interviewer.generate_overall_feedback(mock_responses, None)
+        return 7.0, recommendation
+    except Exception as e:
+        print(f"Error in generate_interview_recommendation: {e}")
+        return 5.0, "Interview recommendation generation failed."
 
 def analyze_resume(resume_text):
-    """Analyzes a resume and extracts key information using AI."""
-    prompt = f"""
-    You are an expert HR consultant and resume analyst. Please analyze the following resume and provide detailed feedback.
-    
-    Resume Content:
-    {resume_text[:5000]}  # Limit to first 5000 chars to avoid token limits
-    
-    Please provide your analysis in the following format:
-    Score: [Number out of 10]
-    
-    Key Skills Identified:
-    - [Skill 1]
-    - [Skill 2]
-    - [Skill 3]
-    (list up to 10 key skills)
-    
-    Suggestions for Improvement:
-    - [Suggestion 1]
-    - [Suggestion 2]
-    - [Suggestion 3]
-    
-    Overall Assessment: [Brief paragraph about strengths and areas to improve]
-    """
-    
-    response = get_ai_response(prompt)
-    if not response:
-        return 5.0, [], "Resume analysis failed due to AI engine error."
-    
-    # Parse response
+    """Analyzes a resume and extracts key information using ResumeAnalyzer."""
     try:
-        lines = response.split('\n')
-        score = 5.0
-        skills = []
-        suggestions = ""
-        assessment = ""
+        from .ai_models.resume_analyzer import ResumeAnalyzer
+        analyzer = ResumeAnalyzer()
         
-        for i, line in enumerate(lines):
-            if 'Score:' in line:
-                try:
-                    score = float(line.split(':')[1].strip().split('/')[0])
-                except:
-                    score = 5.0
-            elif 'Key Skills' in line:
-                j = i + 1
-                while j < len(lines) and lines[j].strip().startswith('-'):
-                    skill = lines[j].strip().lstrip('- ')
-                    if skill:
-                        skills.append(skill)
-                    j += 1
-            elif 'Suggestions' in line:
-                j = i + 1
-                suggestions_list = []
-                while j < len(lines) and lines[j].strip().startswith('-'):
-                    sugg = lines[j].strip().lstrip('- ')
-                    if sugg:
-                        suggestions_list.append(sugg)
-                    j += 1
-                suggestions = "\n".join(suggestions_list)
-            elif 'Overall Assessment' in line or 'Assessment:' in line:
-                assessment = response.split('Overall Assessment:' if 'Overall Assessment' in response else 'Assessment:')[1].strip()
+        analysis = analyzer.analyze_resume_text(resume_text)
         
-        return score, skills, assessment if assessment else suggestions
+        scores_dict = analysis.get('scores', {})
+        avg_score = 5.0
+        if isinstance(scores_dict, dict) and scores_dict:
+            vals = []
+            for v in scores_dict.values():
+                if isinstance(v, dict) and 'score' in v:
+                    vals.append(v['score'])
+                elif isinstance(v, (int, float)):
+                    vals.append(v)
+            if vals:
+                avg_score = sum(vals) / len(vals)
+                
+        skills = analysis.get('skills', [])
+        recommendations = analysis.get('recommendations', [])
+        
+        if isinstance(recommendations, list):
+            suggestions = "\n".join(recommendations)
+        else:
+            suggestions = str(recommendations)
+            
+        return avg_score, skills, suggestions
     except Exception as e:
-        print(f"Error parsing resume analysis: {e}")
-        return 5.0, [], response
+        print(f"Error analyzing resume: {e}")
+        return 5.0, [], f"Resume analysis failed. {str(e)}"
 
 def evaluate_proctoring_response(question, response_text, role_type):
     """Evaluates a response during a proctoring session."""

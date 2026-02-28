@@ -1,0 +1,95 @@
+{
+    "candidate_name": "Siddhesh Malusare",
+    "interview_id": "mock_id_010",
+    "job_role": "qa_engineer",
+    "total_score": 30.0,
+    "percentage": 60.0,
+    "max_possible": 50,
+    "total_questions": 5,
+    "responses": [
+        {
+            "question_index": 0,
+            "question": "What is the difference between black-box and white-box testing?",
+            "answer": "Black-box testing focuses on the external behavior of the software without knowing its internal structure. White-box testing, on the other hand, examines the internal code and logic of the application.",
+            "feedback": "Correct definition. Good awareness of testing perspectives.",
+            "score": 7.5,
+            "physical_analysis": {
+                "confidence": 6.8,
+                "voice_quality": 7.0,
+                "body_language": 7.2,
+                "overall_physical_score": 6.9,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 1,
+            "question": "Can you explain the software testing life cycle (STLC)?",
+            "answer": "The STLC involves several stages: requirement analysis, test planning, test case development, environment setup, test execution, and test closure.",
+            "feedback": "Comprehensive overview of the STLC process.",
+            "score": 6.8,
+            "physical_analysis": {
+                "confidence": 6.2,
+                "voice_quality": 6.5,
+                "body_language": 5.8,
+                "overall_physical_score": 6.1,
+                "violations": [
+                    "No face detected"
+                ]
+            }
+        },
+        {
+            "question_index": 2,
+            "question": "What is Regression Testing?",
+            "answer": "Regression testing is performed to confirm that a recent program or code change has not adversely affected existing features. It's essentially a partial or full selection of already executed test cases which are re-executed.",
+            "feedback": "Core concept well explained. Impact analysis is key here.",
+            "score": 7.2,
+            "physical_analysis": {
+                "confidence": 6.5,
+                "voice_quality": 6.8,
+                "body_language": 6.5,
+                "overall_physical_score": 6.6,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 3,
+            "question": "What is the difference between Verification and Validation?",
+            "answer": "Verification is checking if the product is built according to requirements (Are we building the product right?). Validation is checking if the product meets user needs (Are we building the right product?).",
+            "feedback": "Classic distinction correctly identified. Very important for QA professionals.",
+            "score": 6.0,
+            "physical_analysis": {
+                "confidence": 5.5,
+                "voice_quality": 6.2,
+                "body_language": 6.0,
+                "overall_physical_score": 5.8,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 4,
+            "question": "How do you handle a bug that a developer has marked as 'Not a Bug'?",
+            "answer": "I would provide more evidence, like screenshots or logs, and explain the user impact. If we still disagree, I'd bring it to the product owner for a final decision on whether it meets requirements.",
+            "feedback": "Good collaborative approach to conflict resolution in the development cycle.",
+            "score": 5.5,
+            "physical_analysis": {
+                "confidence": 5.0,
+                "voice_quality": 6.8,
+                "body_language": 5.5,
+                "overall_physical_score": 5.7,
+                "violations": []
+            }
+        }
+    ],
+    "physical_summary": {
+        "avg_confidence": 6.25,
+        "avg_voice": 6.65,
+        "avg_posture": 6.25,
+        "emotion_profile": {
+            "Neutral": 70,
+            "Concerned": 20,
+            "Surprise": 10
+        }
+    },
+    "start_time": "2026-02-19T17:00:00.000000",
+    "end_time": "2026-02-19T17:15:00.000000"
+}

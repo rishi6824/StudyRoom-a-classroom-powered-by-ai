@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rishi Interview Assistant{% endblock %}</title>
+    <link rel="stylesheet" href="{{ {% static 'core/css/style.css' %}?v=2.1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        /* Inline critical CSS to ensure it's always loaded - prevents CSS issues after navigation */
+        .interview-room {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .video-section {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .question-section {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .interview-header {
+            display: flex !important;
+            visibility: visible !important;
+        }
+
+        .timer {
+            display: inline-block !important;
+            visibility: visible !important;
+        }
+
+        .btn {
+            display: inline-block !important;
+            visibility: visible !important;
+        }
+
+        .question-card {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .answer-section {
+            display: block !important;
+            visibility: visible !important;
+        }
+    </style>
+</head>
+
+<body style="background: #000033; color: white;">
+    <!-- DEPRECATED: This base template is deprecated. Use base_interview.html or base_resume.html instead -->
+    <!-- Navbar removed - platforms are now separate -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer" style="background: #000044; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="footer-content">
+            <!-- Copyright removed as requested -->
+            <div class="admin-link">
+                <a href="{% url 'admin' %}">Admin Panel</a>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .admin-link {
+            margin-top: 0.5rem;
+        }
+
+        .admin-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <script src="{{ {% static 'core/js/script.js' %}"></script>
+</body>
+
+</html>

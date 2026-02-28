@@ -1,0 +1,93 @@
+{
+    "candidate_name": "Rushikesh Khaire",
+    "interview_id": "mock_id_007",
+    "job_role": "software_engineer",
+    "total_score": 42.5,
+    "percentage": 85.0,
+    "max_possible": 50,
+    "total_questions": 5,
+    "responses": [
+        {
+            "question_index": 0,
+            "question": "What is the difference between synchronous and asynchronous programming?",
+            "answer": "Synchronous programming executes tasks one by one, where each task must finish before the next begins. Asynchronous programming allows tasks to run concurrently, so the main thread isn't blocked while waiting for I/O operations.",
+            "feedback": "Excellent understanding of concurrency models and non-blocking I/O.",
+            "score": 9.0,
+            "physical_analysis": {
+                "confidence": 8.5,
+                "voice_quality": 8.0,
+                "body_language": 8.8,
+                "overall_physical_score": 8.3,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 1,
+            "question": "How do you handle error management in a large-scale application?",
+            "answer": "I use a global error handling middleware, centralized logging (like ELK), and ensure meaningful status codes are returned to the client.",
+            "feedback": "Great focus on maintainability and observability.",
+            "score": 8.5,
+            "physical_analysis": {
+                "confidence": 8.2,
+                "voice_quality": 8.5,
+                "body_language": 8.5,
+                "overall_physical_score": 8.3,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 2,
+            "question": "What are the benefits of using a Microservices architecture?",
+            "answer": "Microservices allow for independent scaling, technology diversity across services, better isolation of failures, and faster deployment cycles for individual components.",
+            "feedback": "Strong grasp of modern architectural patterns and their operational benefits.",
+            "score": 8.8,
+            "physical_analysis": {
+                "confidence": 8.5,
+                "voice_quality": 8.0,
+                "body_language": 8.2,
+                "overall_physical_score": 8.2,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 3,
+            "question": "How do you optimize a slow database query?",
+            "answer": "I start by analyzing the execution plan (EXPLAIN), then look for missing indexes, avoid select stars, and potentially refactor the query to reduce joins or use caching layers like Redis.",
+            "feedback": "Very practical approach to performance tuning. Good mention of caching.",
+            "score": 8.2,
+            "physical_analysis": {
+                "confidence": 8.0,
+                "voice_quality": 8.5,
+                "body_language": 8.0,
+                "overall_physical_score": 8.1,
+                "violations": []
+            }
+        },
+        {
+            "question_index": 4,
+            "question": "Describe your experience with Unit Testing and Test Driven Development.",
+            "answer": "I follow TDD by writing tests before implementation. It ensures high code coverage and makes refactoring much safer. I use tools like Jest or Pytest depending on the stack.",
+            "feedback": "Great focus on software quality and sustainable development practices.",
+            "score": 8.0,
+            "physical_analysis": {
+                "confidence": 8.5,
+                "voice_quality": 8.2,
+                "body_language": 8.5,
+                "overall_physical_score": 8.4,
+                "violations": []
+            }
+        }
+    ],
+    "physical_summary": {
+        "avg_confidence": 8.35,
+        "avg_voice": 8.25,
+        "avg_posture": 8.65,
+        "emotion_profile": {
+            "Happy": 20,
+            "Neutral": 75,
+            "Serious": 5
+        }
+    },
+    "start_time": "2026-02-19T15:30:00.000000",
+    "end_time": "2026-02-19T15:45:00.000000"
+}

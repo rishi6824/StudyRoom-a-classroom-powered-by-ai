@@ -1,0 +1,68 @@
+{% extends "core/base_interview.html" %}
+
+{% block title %}Home - Rishi Interview Assistant{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1>Rishi - Interview Platform</h1>
+        <p>Choose your option to get started</p>
+
+        <div class="options-section">
+            <div class="option-card">
+                <h2>🎤 Start Interview</h2>
+                <p>Begin your AI-powered interview session</p>
+                <button onclick="startInterview()" class="btn btn-primary btn-large">Start Interview</button>
+            </div>
+
+            <div class="option-card">
+                <h2>📄 Resume Analyzer</h2>
+                <p>Upload and analyze your resume</p>
+                <a href="{% url 'analyze_resume' %}" class="btn btn-secondary btn-large">Resume Analyzer</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function startInterview() {
+        // Generate OTP and redirect to interview setup
+        window.location.href = '{% url "interview_setup" %}';
+    }
+</script>
+
+<style>
+    .options-section {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+
+    .option-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 300px;
+        flex: 1;
+    }
+
+    .option-card h2 {
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .option-card p {
+        color: #7f8c8d;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-large {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
