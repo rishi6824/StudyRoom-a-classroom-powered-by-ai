@@ -8,6 +8,8 @@ import re
 import os
 import requests
 import json
+import hashlib
+from difflib import SequenceMatcher
 from .config import Config
 
 class ResumeAnalyzer:
@@ -16,6 +18,12 @@ class ResumeAnalyzer:
         self.api_url = Config.HUGGINGFACE_API_URL
         self.sentiment_model = Config.SENTIMENT_MODEL
         self.analysis_model = Config.ANSWER_ANALYSIS_MODEL
+        
+        # Initialize resume database for uniqueness checking
+        self.resume_db_path = os.path.join(os.path.dirname(__file__), '../data/resumes')
+        os.makedirs(self.resume_db_path, exist_ok=True)
+        self.resume_fingerprints_file = os.path.join(self.resume_db_path, 'resume_fingerprints.json')
+        self._ensure_fingerprints_db()
         
         self.skill_categories = {
             'programming': ['python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin'],
@@ -507,3 +515,206 @@ Recommendations:"""
             print(f"Error generating HF recommendations: {e}")
         
         return None
+    
+    def _ensure_fingerprints_db(self):
+        """Ensure the fingerprints database file exists"""
+        if not os.path.exists(self.resume_fingerprints_file):
+            with open(self.resume_fingerprints_file, 'w') as f:
+                json.dump({'resumes': []}, f, indent=2)
+    
+    def _extract_key_features(self, text):
+        """
+        Extract key features for uniqueness checking:
+        - Skills
+        - Education
+        - Years of experience
+        - Projects/achievements
+        """
+        text_lower = text.lower()
+        features = {}
+        
+        # Extract skills
+        features['skills'] = self._extract_skills(text)
+        
+        # Extract education
+        education = self._extract_education(text)
+        features['education'] = education.get('degrees', [])
+        
+        # Extract experience
+        experience = self._extract_experience(text)
+        features['experience'] = experience.get('years', 'Not specified')
+        
+        # Extract projects (look for common project keywords)
+        project_keywords = ['project', 'developed', 'built', 'created', 'designed', 'implemented', 'led']
+        projects = []
+        sentences = re.split(r'[.!?]', text)
+        for sentence in sentences:
+            if any(keyword in sentence.lower() for keyword in project_keywords):
+                # Extract project name and description
+                project_summary = sentence.strip()[:100]
+                if project_summary and len(project_summary) > 10:
+                    projects.append(project_summary.lower())
+        
+        features['projects'] = projects[:5]  # Limit to 5 projects
+        
+        # Extract career insights (titles, companies)
+        title_keywords = ['developer', 'engineer', 'manager', 'analyst', 'architect', 'lead', 'senior', 'junior']
+        roles = []
+        for title_kw in title_keywords:
+            if title_kw in text_lower:
+                roles.append(title_kw)
+        
+        features['roles'] = list(set(roles))
+        
+        return features
+    
+    def _compute_resume_fingerprint(self, features):
+        """
+        Compute a fingerprint hash of the resume based on key features
+        """
+        # Flatten all features into a string for hashing
+        fingerprint_data = {
+            'skills': sorted([s for skill_list in features.get('skills', {}).values() for s in skill_list]),
+            'education': sorted(features.get('education', [])),
+            'experience': features.get('experience', ''),
+            'projects': sorted(features.get('projects', [])),
+            'roles': sorted(features.get('roles', []))
+        }
+        
+        fingerprint_string = json.dumps(fingerprint_data, sort_keys=True)
+        fingerprint_hash = hashlib.sha256(fingerprint_string.encode()).hexdigest()
+        
+        return fingerprint_hash, fingerprint_data
+    
+    def _calculate_similarity(self, features1, features2):
+        """
+        Calculate similarity score between two resume feature sets.
+        Returns a score between 0 and 1, where 1 is identical.
+        """
+        similarity_scores = []
+        
+        # Skills similarity
+        skills1 = set(s for skill_list in features1.get('skills', {}).values() for s in skill_list)
+        skills2 = set(s for skill_list in features2.get('skills', {}).values() for s in skill_list)
+        if skills1 or skills2:
+            skills_similarity = len(skills1 & skills2) / len(skills1 | skills2) if (skills1 | skills2) else 0
+            similarity_scores.append(skills_similarity * 0.4)  # Weight skills at 40%
+        
+        # Education similarity
+        edu1 = set(features1.get('education', []))
+        edu2 = set(features2.get('education', []))
+        if edu1 or edu2:
+            edu_similarity = len(edu1 & edu2) / len(edu1 | edu2) if (edu1 | edu2) else 0
+            similarity_scores.append(edu_similarity * 0.15)  # Weight education at 15%
+        
+        # Experience similarity
+        exp1 = str(features1.get('experience', '')).lower()
+        exp2 = str(features2.get('experience', '')).lower()
+        exp_similarity = SequenceMatcher(None, exp1, exp2).ratio()
+        similarity_scores.append(exp_similarity * 0.15)  # Weight experience at 15%
+        
+        # Projects similarity
+        projects1 = features1.get('projects', [])
+        projects2 = features2.get('projects', [])
+        project_matches = sum(1 for p1 in projects1 for p2 in projects2 if SequenceMatcher(None, p1, p2).ratio() > 0.7)
+        projects_similarity = project_matches / max(len(projects1), len(projects2), 1)
+        similarity_scores.append(projects_similarity * 0.2)  # Weight projects at 20%
+        
+        # Roles similarity
+        roles1 = set(features1.get('roles', []))
+        roles2 = set(features2.get('roles', []))
+        if roles1 or roles2:
+            roles_similarity = len(roles1 & roles2) / len(roles1 | roles2) if (roles1 | roles2) else 0
+            similarity_scores.append(roles_similarity * 0.1)  # Weight roles at 10%
+        
+        total_similarity = sum(similarity_scores)
+        return total_similarity
+    
+    def _check_resume_uniqueness(self, features, similarity_threshold=0.75):
+        """
+        Check if the resume is unique by comparing with existing resumes.
+        Returns (is_unique, most_similar_score, error_message)
+        
+        similarity_threshold: Resumes with similarity >= this value are considered duplicates
+        """
+        try:
+            with open(self.resume_fingerprints_file, 'r') as f:
+                data = json.load(f)
+                existing_resumes = data.get('resumes', [])
+            
+            if not existing_resumes:
+                # First resume is always unique
+                return True, 0.0, None
+            
+            max_similarity = 0.0
+            most_similar_features = None
+            
+            for existing_resume in existing_resumes:
+                existing_features = existing_resume.get('features', {})
+                similarity_score = self._calculate_similarity(features, existing_features)
+                
+                if similarity_score > max_similarity:
+                    max_similarity = similarity_score
+                    most_similar_features = existing_resume
+            
+            # Check if similarity exceeds threshold
+            if max_similarity >= similarity_threshold:
+                error_msg = (
+                    f"❌ Resume Upload Failed: This resume is too similar to an existing resume. "
+                    f"Similarity Score: {max_similarity:.1%}\n\n"
+                    f"Your resume must be unique with distinct:\n"
+                    f"✓ Career insights and professional roles\n"
+                    f"✓ Technical skills and expertise areas\n"
+                    f"✓ Projects and accomplishments\n\n"
+                    f"Please upload a resume that represents a different professional profile."
+                )
+                return False, max_similarity, error_msg
+            
+            return True, max_similarity, None
+            
+        except Exception as e:
+            print(f"Error checking resume uniqueness: {e}")
+            # If there's an error, allow the resume (fail-open)
+            return True, 0.0, None
+    
+    def _store_resume_fingerprint(self, fingerprint_hash, features):
+        """
+        Store the resume fingerprint for future uniqueness checks
+        """
+        try:
+            with open(self.resume_fingerprints_file, 'r') as f:
+                data = json.load(f)
+            
+            # Add new resume fingerprint
+            resume_entry = {
+                'hash': fingerprint_hash,
+                'features': features,
+                'timestamp': str(os.popen('date').read().strip())
+            }
+            
+            data['resumes'].append(resume_entry)
+            
+            with open(self.resume_fingerprints_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            
+            return True
+        except Exception as e:
+            print(f"Error storing resume fingerprint: {e}")
+            return False
+    
+    def check_and_validate_resume(self, text):
+        """
+        Main method to check if a resume is unique.
+        Returns (is_valid, error_message)
+        """
+        features = self._extract_key_features(text)
+        fingerprint_hash, fingerprint_data = self._compute_resume_fingerprint(features)
+        
+        is_unique, similarity_score, error_msg = self._check_resume_uniqueness(features, similarity_threshold=0.75)
+        
+        if is_unique:
+            # Store this fingerprint for future comparisons
+            self._store_resume_fingerprint(fingerprint_hash, fingerprint_data)
+            return True, None
+        else:
+            return False, error_msg
